@@ -1,51 +1,71 @@
 paper:
-  title: "Do Penguins Dream of Embeddings? A Benchmark for Latent Aquatic Reasoning"
-  short_title: "Penguin Embeddings"
-  description: "A benchmark and template demonstration paper testing whether latent embeddings support aquatic reasoning tasks, used here to exercise every block type in the paper-page template."
+  title: "On-the-fly Weight Generation: A Hypernetwork Proof of Concept on ARC-1D"
+  short_title: "On-the-fly Weights"          # nav wordmark + browser tab title; keep brief
+  wordmark_logo: assets/favicon-fly.svg      # optional graphic after the nav wordmark
+  wordmark_logo_dark: assets/favicon-fly-dark.svg   # optional; shown instead in dark mode
+  description: "A hypernetwork reads three examples of a task and writes all the weights of a tiny Transformer that solves it. On ARC-1D, few-shot context can be compiled on the fly into compact, executable model parameters."
   year: 2026
-  venue: null
+  venue:                               # a plain string, or a map like this one
+    label: "Workshop (🔦 Spotlight)"
+    title: "Spotlight at the NeurIPS 2026 Workshop on Neural Network Artifacts as a New Data Modality"
+    url: https://artifactsasdata.org/
+    logo: assets/logos/neurips.svg
+    logo_dark: assets/logos/neurips-dark.svg
   doi: null
-  arxiv: null
+  arxiv: "2610.00820"
 
 # One entry drives the hero, <title>, OpenGraph/Twitter/Scholar meta, and
-# citation UI -- see docs/01-principles.md #2. Until scripts/build.py exists
-# (tasks/00-overview.md's "out of scope" note), index.html's <head> tags are
-# hand-synced to match this file rather than generated from it.
+# citation UI. See docs/01-principles.md #2.
 resources:
-  paper: null
-  code: https://github.com/example/penguin-embeddings
-  dataset: https://huggingface.co/datasets/example/penguin-embeddings
-  demo: null
-  slides: null
+  code: https://github.com/FJFehr/on-the-fly-models
+  contact: mailto:fabiofehr96@gmail.com
+  # Add more buttons as you need them, for example:
+  #   paper: https://...                 # PDF or venue page
+  #   dataset: https://huggingface.co/datasets/...
+  #   demo: https://...
+  #   slides: https://...
+  #   contact: mailto:you@example.com    # email pill
+  # Any other key still gets a button, with a generic link icon. A null value
+  # shows a greyed-out button, so delete the line if you don't want one.
 
 social:
-  image: assets/og-image.svg
-  favicon: assets/favicon.svg
-  canonical_url: null
+  image: assets/og-image.svg           # OG/Twitter card image
+  favicon: assets/favicon-fly-auto.svg # teal fly, outline follows OS dark mode; alternative: assets/favicon.svg (3x3 tile grid)
+  canonical_url: https://fjfehr.github.io/on-the-fly/
 
 theme:
-  palette: teal
-  mode: auto
-  # Leave blank for "no overrides" -- template/js/yaml-lite.js does not
-  # support flow-style maps ("{}"/"{a: b}"), same limitation as
-  # authors.yaml's flow-style-list note. A real override goes on its own
-  # indented "--custom-property-name: value" line below this key.
+  palette: mysterious_primary          # "teal" | "sage" | "gold" | "mysterious_primary" (see template/js/palettes.js)
+  mode: auto                           # "auto" | "light" | "dark" (initial only; visitor can still toggle)
+  # Optional CSS custom-property overrides, one per indented line, e.g.
+  #   --font-serif: "Georgia", serif
   overrides:
+    --affiliation-logo-height: 76px
+    --section-title-align: center
 
 footer:
-  note: "© 2026 · Built with the paper-page template."
+  note: null                           # optional plain string, renders as-is (no Markdown)
 
+# sections[].blocks[] is render order within that section. Reorder, add, or
+# remove either freely, no engine edit needed. The structure below keeps one
+# section per demo section so every block type stays demonstrated; see
+# docs/03-component-vocabulary.md for the full list.
 sections:
-  - id: overview
-    title: Overview
+  - id: teaser
+    nav_title: Overview                  # nav link to the TL;DR; no heading shown
     nav: true
     blocks:
       - type: callout
         style: tldr
         source: content/tldr.md
-      - type: markdown
-        source: content/overview.md
+      - type: figure
+        title: Compiling Examples into Model Weights
+        src: assets/figures/hypernetworks-generation.gif
+        src_dark: assets/figures/hypernetworks-generation-dark.gif
+        alt: "The hypernetwork encodes the three example pairs into a task vector, decodes it into the weights of a small Transformer, and that Transformer predicts the output for a new input."
+        caption: "**Few-shot weight generation.** An encoder φ reads the three examples and summarises the task as a vector z. A decoder ψ turns z into every weight w of a small Transformer f. Once generated, f needs no examples: given only a new input x′, it predicts the output ŷ′."
+        position: center
       - type: takeaways
+        title: Key Takeaways
         source: content/takeaways.yaml
 
   - id: method
@@ -54,26 +74,89 @@ sections:
     blocks:
       - type: markdown
         source: content/method.md
-      - type: table
-        source: content/taxonomy.md
-      - type: figure
-        src: assets/figures/pipeline.svg
-        alt: "Pipeline diagram: raw observations flow through an encoder into a latent aquatic-reasoning space, then a decoder produces the benchmark's answers."
-        caption: "Figure 1. The Penguin Embeddings pipeline: encode, reason in latent space, decode."
-        position: right
 
-  - id: results
-    title: Results
+  - id: data
+    title: Data (ARC-1D)
+    nav: false
+    blocks:
+      - type: markdown
+        source: content/data.md
+      - type: figure
+        src: assets/figures/arc1d-flip-episode.png
+        alt: "Three input–output pairs of coloured cell sequences in which a single marker cell moves from the left end of a block to its right end, followed by a query input whose output is unknown."
+        caption: "**Flip transformation: an example ARC-1D episode.** The three support pairs specify the transformation, which must be applied to the query input x′."
+        position: center
+
+  - id: capacity
+    title: Specialised Models Require Less Capacity
+    nav_title: Results
     nav: true
     blocks:
-      - type: results_table
-        source: content/results-table.yaml
       - type: markdown
-        source: content/results.md
+        source: content/capacity.md
+      - type: figure
+        src: assets/figures/capacity-cliff.png
+        alt: "Exact-match accuracy against parameter count. Individually trained models reach about 99% with 2.4K parameters, while jointly trained models, with or without task ID, need far more parameters to catch up."
+        caption: "**Specialisation requires less capacity.** Individual models saturate earlier than joint models, even when given the transformation identity. Bands show ±1 s.d. across 5 seeds."
+        position: center
+        width: 60%
+
+  - id: generation
+    title: Generating Specialised Models with Hypernetworks
+    nav: false
+    blocks:
+      - type: markdown
+        source: content/generation.md
+      - type: figure
+        src: assets/figures/hypernet-per-task.png
+        alt: "Bar chart of per-transformation exact-match accuracy for individually trained models and hypernetwork-generated models with and without task IDs. Generated models are close to individual models on most transformations."
+        caption: "**Generated models recover specialist performance.** Per-task validation exact-match accuracy for individually trained and hypernetwork-generated models, with and without task IDs, using the 1.4K-parameter target model. Error bars show ±1 s.d. across 5 seeds."
+        position: center
+      - type: markdown
+        source: content/generation-space.md
+      - type: figure
+        src: assets/figures/weight-space-tsne.png
+        alt: "Two t-SNE scatter plots of generated weights coloured by transformation. Left, with a task ID, every transformation forms its own cluster. Right, without a task ID, clusters still form but related transformations overlap."
+        caption: "**Generated parameters form a task-structured weight space.** t-SNE of generated target-model parameters, coloured by transformation. **Left:** with a frozen task embedding, tasks are fully separable (100% linear-probe accuracy). **Right:** without task identity, structure emerges from the support examples alone (60.9%)."
+        position: center
+
+  - id: generalisation
+    title: Towards Generalisation with Hypernetworks
+    nav: false
+    blocks:
+      - type: markdown
+        source: content/generalisation.md
+      - type: figure
+        src: assets/figures/generalisation-loo.png
+        alt: "Bar chart of exact-match accuracy on the paired query versus queries from other episodes of the same transformation, with and without task ID. The bars are close in height."
+        caption: "**Generated specialists generalise across episodes.** Exact-match accuracy on the query paired with the generating support set and on queries from other episodes of the same transformation. Macro-average over 14 transformations, ±1 s.d."
+        position: center
+        width: 60%
+      - type: markdown
+        source: content/generalisation-comp.md
+      - type: figure
+        src: assets/figures/arc1d-comp-fill-mirror.png
+        alt: "Three input–output pairs of coloured cell sequences for the Fill ∘ Mirror composition, followed by a query input whose output is unknown."
+        caption: "**Fill ∘ Mirror: an example compositional ARC-1D episode.** The support pairs specify Mirror followed by Fill. Both are seen independently during training, but their composition is held out."
+        position: center
+      - type: markdown
+        source: content/generalisation-unseen.md
+      - type: table
+        source: content/generalisation-table.md
+        caption: "**Task-ID conditioning improves in-distribution specialisation but hinders generalisation.** Mean ± s.d. over 5 seeds; parentheses show the change from removing the task ID."
+
+  - id: going-beyond
+    title: Going Beyond
+    nav: false
+    blocks:
+      - type: markdown
+        source: content/going-beyond.md
 
   - id: cite
-    title: Cite
+    title: Citation (BibTeX)
+    nav_title: Cite                      # optional shorter nav label
     nav: true
     blocks:
       - type: citation
         source: citation.bib
+        note: "Accepted as a 🔦 spotlight paper at the [NeurIPS 2026 Workshop on Neural Network Artifacts as a New Data Modality](https://artifactsasdata.org/)."

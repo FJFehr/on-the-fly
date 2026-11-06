@@ -7,7 +7,8 @@
 <!-- Favicon -- set once, matches project.yaml's social.favicon by hand until
      scripts/build.py exists to generate this from project.yaml directly
      (see tasks/00-overview.md's "out of scope" note). -->
-<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="icon" type="image/svg+xml" href="assets/favicon-fly-auto.svg">
+<!-- Alternative: <link rel="icon" type="image/svg+xml" href="assets/favicon.svg"> -->
 
 <!-- ============================================================
      Metadata below is PLACEHOLDER, hand-authored to match this demo
@@ -17,27 +18,27 @@
      scope" note. scripts/build.py (future) removes this duplication.
      ============================================================ -->
 <!-- meta:start (scripts/setup.py replaces everything up to meta:end) -->
-<title>Do Penguins Dream of Embeddings? A Benchmark for Latent Aquatic Reasoning</title>
-<meta name="description" content="A benchmark and template demonstration paper testing whether latent embeddings support aquatic reasoning tasks, used here to exercise every block type in the paper-page template.">
-<link rel="canonical" href="TODO">
+<title>On-the-fly Weights</title>
+<meta name="description" content="A hypernetwork reads three examples of a task and writes all the weights of a tiny Transformer that solves it. On ARC-1D, few-shot context can be compiled on the fly into compact, executable model parameters.">
+<link rel="canonical" href="https://fjfehr.github.io/on-the-fly/">
 
 <meta property="og:type" content="article">
-<meta property="og:title" content="Do Penguins Dream of Embeddings? A Benchmark for Latent Aquatic Reasoning">
-<meta property="og:description" content="A benchmark and template demonstration paper testing whether latent embeddings support aquatic reasoning tasks.">
-<meta property="og:image" content="TODO -- absolute URL to assets/og-image.svg">
-<meta property="og:url" content="TODO">
+<meta property="og:title" content="On-the-fly Weight Generation: A Hypernetwork Proof of Concept on ARC-1D">
+<meta property="og:description" content="A hypernetwork reads three examples of a task and writes all the weights of a tiny Transformer that solves it. On ARC-1D, few-shot context can be compiled on the fly into compact, executable model parameters.">
+<meta property="og:image" content="https://fjfehr.github.io/on-the-fly/assets/og-image.svg">
+<meta property="og:url" content="https://fjfehr.github.io/on-the-fly/">
 
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Do Penguins Dream of Embeddings? A Benchmark for Latent Aquatic Reasoning">
-<meta name="twitter:description" content="A benchmark and template demonstration paper testing whether latent embeddings support aquatic reasoning tasks.">
-<meta name="twitter:image" content="assets/og-image.svg">
+<meta name="twitter:title" content="On-the-fly Weight Generation: A Hypernetwork Proof of Concept on ARC-1D">
+<meta name="twitter:description" content="A hypernetwork reads three examples of a task and writes all the weights of a tiny Transformer that solves it. On ARC-1D, few-shot context can be compiled on the fly into compact, executable model parameters.">
+<meta name="twitter:image" content="https://fjfehr.github.io/on-the-fly/assets/og-image.svg">
 
-<meta name="citation_title" content="Do Penguins Dream of Embeddings? A Benchmark for Latent Aquatic Reasoning">
-<meta name="citation_author" content="Smith, Jane">
-<meta name="citation_author" content="Okafor, Amara">
-<meta name="citation_author" content="Lindqvist, Erik">
-<meta name="citation_author" content="Mensah, Kofi">
-<meta name="citation_author" content="Shah, Priya">
+<meta name="citation_title" content="On-the-fly Weight Generation: A Hypernetwork Proof of Concept on ARC-1D">
+<meta name="citation_author" content="Fehr, Fabio J.">
+<meta name="citation_author" content="Torr, Philip">
+<meta name="citation_publication_date" content="2026">
+<meta name="citation_arxiv_id" content="2610.00820">
+<meta name="citation_pdf_url" content="https://arxiv.org/pdf/2610.00820">
 <!-- meta:end -->
 
 <link rel="stylesheet" href="template/css/style.css">
@@ -60,7 +61,7 @@
       var stored = localStorage.getItem("theme");
       var mode = stored || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
       document.documentElement.setAttribute("data-theme", mode);
-      if (typeof applyTheme === "function") applyTheme({ palette: "teal", overrides: {} }, mode);
+      if (typeof applyTheme === "function") applyTheme({ palette: "mysterious_primary", overrides: {} }, mode);
     } catch (e) {
       /* localStorage/matchMedia unavailable -- default light stylesheet applies. */
     }
@@ -75,8 +76,9 @@
 <header class="site-header">
   <div class="nav-inner">
     <a class="wordmark" id="wordmark" href="#top"></a>
-    <nav id="site-nav" aria-label="Section"></nav>
-    <button id="theme-toggle" type="button" aria-label="Switch to dark theme" aria-pressed="false">☾</button>
+    <nav id="site-nav" aria-label="Section">
+      <button id="theme-toggle" type="button" aria-label="Switch to dark theme" aria-pressed="false">☾</button>
+    </nav>
   </div>
 </header>
 
@@ -85,12 +87,16 @@
     <h1 id="hero-title"></h1>
     <ul id="author-list"></ul>
     <p id="equal-contribution-note" hidden>* Equal contribution</p>
-    <div id="affiliation-logos"></div>
-    <div id="resource-buttons"></div>
     <p id="correspondence" hidden>
-      Correspondence: <span id="correspondence-name"></span>
-      (<a id="correspondence-email" href="#"></a>)
+      Correspondence: <span id="correspondence-name"></span>,
+      <a id="correspondence-email" href="#"></a>
     </p>
+    <div id="affiliation-logos"></div>
+    <!-- Venue badge + resource buttons share one centred, wrapping row. -->
+    <div class="hero-pills">
+      <p id="venue-badge" hidden></p>
+      <div id="resource-buttons"></div>
+    </div>
   </div>
 </section>
 

@@ -83,18 +83,36 @@
       .map(function (link) { return document.getElementById(link.getAttribute("href").slice(1)); })
       .filter(Boolean);
 
-    if (sections.length && "IntersectionObserver" in window) {
-      const observer = new IntersectionObserver(function (entries) {
-        entries.forEach(function (entry) {
-          const link = navLinks.find(function (l) { return l.getAttribute("href") === "#" + entry.target.id; });
-          if (!link) return;
-          if (entry.isIntersecting) {
-            navLinks.forEach(function (l) { l.removeAttribute("aria-current"); });
-            link.setAttribute("aria-current", "true");
-          }
+    // Scroll-spy: the active section is the last one whose top has passed
+    // just below the sticky header (or the last section once the page is
+    // scrolled to the bottom). The source repos' mid-viewport
+    // IntersectionObserver skipped ahead whenever a section was shorter
+    // than half the viewport.
+    if (sections.length) {
+      let ticking = false;
+      const updateActiveLink = function () {
+        ticking = false;
+        const headerHeight = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--header-height")) || 64;
+        const atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
+        let active = null;
+        if (atBottom) {
+          active = sections[sections.length - 1];
+        } else {
+          sections.forEach(function (s) {
+            if (s.getBoundingClientRect().top <= headerHeight + 24) active = s;
+          });
+        }
+        navLinks.forEach(function (l) {
+          if (active && l.getAttribute("href") === "#" + active.id) l.setAttribute("aria-current", "true");
+          else l.removeAttribute("aria-current");
         });
-      }, { rootMargin: "-45% 0px -50% 0px", threshold: 0 });
-      sections.forEach(function (s) { observer.observe(s); });
+      };
+      const requestUpdate = function () {
+        if (!ticking) { ticking = true; requestAnimationFrame(updateActiveLink); }
+      };
+      window.addEventListener("scroll", requestUpdate, { passive: true });
+      window.addEventListener("resize", requestUpdate);
+      updateActiveLink();
     }
 
     const progressBar = document.getElementById("scroll-progress");
@@ -181,6 +199,8 @@
     '<svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path fill="currentColor" d="M10 8.5l6 3.5-6 3.5v-7Z"/></svg>';
   const ICON_ARXIV =
     '<img class="btn-icon btn-icon-arxiv" src="template/icons/arxiv.svg" alt="">';
+  const ICON_MAIL =
+    '<svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3" y="5.5" width="18" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path fill="none" stroke="currentColor" stroke-width="1.6" d="m4 7 8 6 8-6"/></svg>';
   const ICON_LINK =
     '<svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="none" stroke="currentColor" stroke-width="1.7" d="M9.5 14.5 14.5 9.5M8 12l-2.3 2.3a3 3 0 0 0 4.24 4.24L12.2 16.3M16 12l2.3-2.3a3 3 0 0 0-4.24-4.24L11.8 7.7"/></svg>';
 
@@ -191,6 +211,7 @@
     dataset: { icon: ICON_DATASET, label: "Dataset" },
     demo: { icon: ICON_PLAY, label: "Demo" },
     slides: { icon: ICON_DOCUMENT, label: "Slides" },
+    contact: { icon: ICON_MAIL, label: "Contact" },   // value: mailto:you@example.com
   };
 
   function titleCase(key) {
@@ -208,8 +229,10 @@
         const a = document.createElement("a");
         a.href = url;
         a.className = "btn";
-        a.target = "_blank";
-        a.rel = "noopener noreferrer";
+        if (!url.startsWith("mailto:")) {
+          a.target = "_blank";
+          a.rel = "noopener noreferrer";
+        }
         a.innerHTML = icon + '<span class="' + textClass + '">' + label + "</span>";
         return a;
       }
@@ -260,9 +283,76 @@
       currentProject = project;
 
       // Hero
-      document.title = project.paper.title;
-      document.getElementById("hero-title").textContent = project.paper.title;
-      document.getElementById("wordmark").textContent = project.paper.short_title || project.paper.title;
+      document.title = project.paper.short_title || project.paper.title;
+      // A "Title: Subtitle" paper title always breaks after the colon, so
+      // the subtitle starts on its own line.
+      const heroTitle = document.getElementById("hero-title");
+      const colon = project.paper.title.indexOf(": ");
+      if (colon === -1) {
+        heroTitle.textContent = project.paper.title;
+      } else {
+        heroTitle.classList.add("hero-title-split");
+        [project.paper.title.slice(0, colon + 1), project.paper.title.slice(colon + 2)].forEach(function (part) {
+          const line = document.createElement("span");
+          line.className = "hero-title-line";
+          line.textContent = part;
+          heroTitle.appendChild(line);
+        });
+      }
+      const wordmark = document.getElementById("wordmark");
+      wordmark.textContent = project.paper.short_title || project.paper.title;
+      // paper.wordmark_logo: optional graphic (path under assets/) shown
+      // after the nav wordmark text; optional wordmark_logo_dark replaces it
+      // in dark mode (same light/dark swap as the venue badge logo).
+      if (project.paper.wordmark_logo) {
+        const logo = document.createElement("img");
+        logo.className = "wordmark-logo";
+        logo.src = project.paper.wordmark_logo;
+        logo.alt = "";
+        wordmark.appendChild(logo);
+        if (project.paper.wordmark_logo_dark) {
+          logo.classList.add("wordmark-logo-light");
+          const logoDark = document.createElement("img");
+          logoDark.className = "wordmark-logo wordmark-logo-dark";
+          logoDark.src = project.paper.wordmark_logo_dark;
+          logoDark.alt = "";
+          wordmark.appendChild(logoDark);
+        }
+      }
+      // paper.venue: optional badge under the title; null keeps it hidden.
+      // Either a plain string, or a map of label + optional url, logo /
+      // logo_dark (paths under assets/) and title (hover tooltip).
+      const venue = project.paper.venue;
+      if (venue) {
+        const venueBadge = document.getElementById("venue-badge");
+        const v = typeof venue === "string" ? { label: venue } : venue;
+        const inner = v.url ? document.createElement("a") : document.createElement("span");
+        if (v.url) {
+          inner.href = v.url;
+          inner.target = "_blank";
+          inner.rel = "noopener noreferrer";
+        }
+        if (v.logo) {
+          const img = document.createElement("img");
+          img.src = v.logo;
+          img.alt = "";
+          inner.appendChild(img);
+          // Optional logo_dark: shown instead in dark mode (same idea as a
+          // figure's src_dark).
+          if (v.logo_dark) {
+            img.classList.add("venue-logo-light");
+            const imgDark = document.createElement("img");
+            imgDark.src = v.logo_dark;
+            imgDark.alt = "";
+            imgDark.className = "venue-logo-dark";
+            inner.appendChild(imgDark);
+          }
+        }
+        inner.appendChild(document.createTextNode(v.label || ""));
+        if (v.title) venueBadge.title = v.title;
+        venueBadge.appendChild(inner);
+        venueBadge.hidden = false;
+      }
       renderAuthors(authorsData.authors, authorsData.affiliations);
       renderAffiliationLogos(authorsData.affiliations);
       renderCorrespondence(authorsData.correspondence);
@@ -280,13 +370,15 @@
 
       // Nav + <main>, built entirely from sections[]
       const nav = document.getElementById("site-nav");
+      const themeToggle = document.getElementById("theme-toggle");  // links go before it
       const main = document.getElementById("main");
+      const blockLoads = [];
       (project.sections || []).forEach(function (section) {
         if (section.nav) {
           const a = document.createElement("a");
           a.href = "#" + section.id;
-          a.textContent = section.title || section.id;
-          nav.appendChild(a);
+          a.textContent = section.nav_title || section.title || section.id;
+          nav.insertBefore(a, themeToggle);
         }
 
         const el = document.createElement("section");
@@ -309,8 +401,21 @@
         (section.blocks || []).forEach(function (block) {
           const container = document.createElement("div");
           wrap.appendChild(container);
-          renderBlock(container, block);
+          blockLoads.push(renderBlock(container, block));
         });
+      });
+
+      // A deep link (#section) can't be honoured by the browser: the section
+      // didn't exist at page load. Scroll once every block and image has
+      // loaded, so content above it no longer shifts the target.
+      Promise.all(blockLoads).then(function () {
+        return Promise.all(Array.from(main.querySelectorAll("img")).map(function (img) {
+          // load or error: a broken image must not block the scroll.
+          return img.complete ? null : new Promise(function (done) { img.onload = img.onerror = done; });
+        }));
+      }).then(function () {
+        const target = location.hash && document.getElementById(decodeURIComponent(location.hash.slice(1)));
+        if (target) target.scrollIntoView({ behavior: "instant" });  // jump like a native deep link, not the CSS smooth scroll
       });
 
       // Footer

@@ -26,6 +26,9 @@ render both images and let CSS show the one that matches the active theme (same
 `theme-only-*` approach as the source repos). Document it in `project.yaml`'s
 comments, `docs/03-component-vocabulary.md`, and `_template/project.yaml`.
 
+**Status**: done. `src_dark` is implemented in `template/js/blocks.js` + `template/css/style.css`
+(`figure-light` / `figure-dark` classes keyed on `[data-theme]`).
+
 ## Gap 2: resource buttons with a custom label, icon and tooltip
 
 `legal-reward-bench/links.yaml` has `venue:` (ICML 2026 AI4Law Workshop) and

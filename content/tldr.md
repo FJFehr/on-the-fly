@@ -1,5 +1,10 @@
-**TL;DR.** We test whether a single latent embedding space can support multi-step
-reasoning about aquatic environments — from foraging routes to thermoregulation
-trade-offs — and introduce a five-task benchmark, *Latent Aquatic Reasoning* (LAR),
-to measure it. This whole page is itself a demonstration paper for the
-`paper-page` template: every block type it supports appears somewhere below.
+**TL;DR.** General-purpose models can adapt to many tasks from context, while
+tiny specialist models can execute individual functions with less capacity, but
+typically require task-specific training. We show that a hypernetwork can
+generate the weights of tiny specialist models directly from a few
+demonstrations, using ARC-1D as a controlled testbed. The generated weights
+form a structured space, and the resulting specialists show partial
+compositional generalisation and generalisation to transformations not seen
+during training. Together, these results suggest that a few examples can be
+compiled on-the-fly into compact executable models, whose weights can be
+reused and partially recombined to generalise beyond known functions.

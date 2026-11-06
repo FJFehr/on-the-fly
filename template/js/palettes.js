@@ -9,6 +9,9 @@
  *             neutrals, secondary and accent
  *   - "sage"  ported from when-rubrics-fail/static/js/theme.js
  *   - "gold"  ported from legal-reward-bench/static/js/theme.js
+ *   - "mysterious_primary"  the primary-colour subset of the "Mysterious
+ *             Rainbow" palette: teal (#2F8F82) as blue, brick red as red,
+ *             gold as yellow, on khaki-tinted light neutrals
  *
  * Each palette has a light/dark pair; each of those has the base neutrals
  * (background/surface/text/textMuted/border/rule/linkHover) plus three
@@ -97,6 +100,32 @@ const PALETTES = {
       primary: { dark: "#DEB73F", mid: "#DEB73F", light: "#584922", text: "#C8AC55" },
       secondary: { dark: "#6F95C4", mid: "#6F95C4", light: "#363F4A", text: "#7B96B8" },
       accent: { dark: "#D08A52", mid: "#D08A52", light: "#533C28", text: "#BE8C64" },
+    },
+  },
+  mysterious_primary: {
+    light: {
+      background: "#F0ECE3",
+      surface: "#F8F5EF",
+      text: "#2A2521",
+      textMuted: "#6E6759",
+      border: "#DACFBA",
+      rule: "#CDBFA3",
+      linkHover: "#1C564E",
+      primary: { dark: "#2F8F82", mid: "#63ABA1", light: "#C1DDDA", text: "#267268" },
+      secondary: { dark: "#B2524A", mid: "#C57D77", light: "#E8CBC9", text: "#8E423B" },
+      accent: { dark: "#C9A227", mid: "#D6B95D", light: "#EFE3BE", text: "#796117" },
+    },
+    dark: {
+      background: "#1E1A16",
+      surface: "#28231E",
+      text: "#EDE6D8",
+      textMuted: "#A79C8A",
+      border: "#3A332B",
+      rule: "#453D33",
+      linkHover: "#C1DDDA",
+      primary: { dark: "#63ABA1", mid: "#63ABA1", light: "#1C2D2A", text: "#8DC1BA" },
+      secondary: { dark: "#C57D77", mid: "#C57D77", light: "#33221F", text: "#D5A09B" },
+      accent: { dark: "#D6B95D", mid: "#D6B95D", light: "#332C1A", text: "#E1CC88" },
     },
   },
 };

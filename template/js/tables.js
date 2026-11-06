@@ -33,6 +33,9 @@
     s = s.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
     s = s.replace(/\*(.+?)\*/g, "<em>$1</em>");
     s = s.replace(/`(.+?)`/g, "<code>$1</code>");
+    // Signed deltas like "(+7.8)" / "(−35.6)" get a gain/loss colour.
+    s = s.replace(/\(\+([\d.]+%?)\)/g, '<span class="delta-pos">(+$1)</span>');
+    s = s.replace(/\([−-]([\d.]+%?)\)/g, '<span class="delta-neg">(−$1)</span>');
     return s;
   }
 
@@ -103,6 +106,11 @@
     const tbody = document.createElement("tbody");
     parsed.rows.forEach(function (cells) {
       const tr = document.createElement("tr");
+      // A row with only its first cell filled is a group label ("*Unseen*").
+      if (cells.length > 1 && cells.slice(1).every(function (c) { return !c; })) {
+        tr.className = "md-table-group";
+        el.classList.add("md-table-grouped");
+      }
       cells.forEach(function (cell, i) {
         const td = document.createElement("td");
         if (i === 0) td.className = "md-table-key";

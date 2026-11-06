@@ -41,14 +41,35 @@
     },
 
     figure: function (container, block) {
+      // Optional title above the figure, styled like a section heading
+      // (legal-reward-bench's pull figure has its own h2).
+      if (block.title) {
+        const h2 = document.createElement("h2");
+        h2.className = "block-title";
+        h2.textContent = block.title;
+        container.appendChild(h2);
+      }
       const figure = document.createElement("figure");
       if (block.position === "left" || block.position === "right") {
         figure.classList.add("fig-" + block.position);
       }
+      // Optional width (any CSS length, e.g. "60%") for small plots that
+      // would otherwise stretch to the full prose width.
+      if (block.width) figure.style.maxWidth = block.width;
       const img = document.createElement("img");
       img.src = block.src;
       img.alt = block.alt || "";
       figure.appendChild(img);
+      // Optional dark-theme variant: render both, CSS shows the one that
+      // matches the active [data-theme] (tasks/11, gap 1).
+      if (block.src_dark) {
+        img.classList.add("figure-light");
+        const imgDark = document.createElement("img");
+        imgDark.src = block.src_dark;
+        imgDark.alt = block.alt || "";
+        imgDark.className = "figure-dark";
+        figure.appendChild(imgDark);
+      }
       if (block.caption) {
         const figcaption = document.createElement("figcaption");
         figcaption.innerHTML = mdInline(block.caption);
@@ -60,6 +81,13 @@
     takeaways: function (container, block) {
       return fetchYaml(block.source)
         .then(function (items) {
+          // Optional heading above the cards, same style as a figure title.
+          if (block.title) {
+            const h2 = document.createElement("h2");
+            h2.className = "block-title";
+            h2.textContent = block.title;
+            container.appendChild(h2);
+          }
           const grid = document.createElement("div");
           grid.className = "takeaways-grid";
           (items || []).forEach(function (item) {
@@ -82,7 +110,15 @@
       wrap.appendChild(table);
       container.appendChild(wrap);
       return fetchText(block.source)
-        .then(function (text) { renderMarkdownTable(table, text); })
+        .then(function (text) {
+          renderMarkdownTable(table, text);
+          // Optional caption, inline Markdown like figure captions.
+          if (block.caption) {
+            const caption = document.createElement("caption");
+            caption.innerHTML = mdInline(block.caption);
+            table.insertBefore(caption, table.firstChild);
+          }
+        })
         .catch(function (err) { loadFailure(container, block.source, err); });
     },
 
@@ -109,6 +145,14 @@
     citation: function (container, block) {
       const wrap = document.createElement("div");
       wrap.className = "citation-block";
+      // Optional note above the BibTeX (inline Markdown), e.g. where the
+      // paper was presented -- legal-reward-bench's bibtex-note slot.
+      if (block.note) {
+        const note = document.createElement("p");
+        note.className = "bibtex-note";
+        note.innerHTML = mdInline(block.note);
+        wrap.appendChild(note);
+      }
       const pre = document.createElement("pre");
       pre.id = "bibtex-block";
       const btn = document.createElement("button");

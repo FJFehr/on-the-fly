@@ -25,6 +25,10 @@ TEMPLATE_DIR = ROOT / "_template"
 HEAD_META = Path("head-meta.html")
 META_BLOCK = re.compile(r"(<!-- meta:start[^>]*-->\n).*?(<!-- meta:end -->)", re.S)
 
+# project.yaml titles that mean "nothing real to lose yet".
+DEMO_TITLE = "Do Penguins Dream of Embeddings? A Benchmark for Latent Aquatic Reasoning"
+PLACEHOLDER_TITLE = "Your Paper Title"
+
 # Demo-only assets with no generic placeholder: deleted, not blanked.
 DEMO_ONLY_ASSETS = [
     "assets/figures/pipeline.svg",
@@ -115,5 +119,13 @@ def main():
 if __name__ == "__main__":
     if not TEMPLATE_DIR.exists():
         print("Error: _template/ not found, nothing to reset from.", file=sys.stderr)
+        sys.exit(1)
+    # Only blank a fresh fork: refuse once project.yaml holds a real paper,
+    # since the reset overwrites it (and content/) with no undo.
+    title = (generate_readme.parse_yaml_lite((ROOT / "project.yaml").read_text()).get("paper") or {}).get("title")
+    if title not in (DEMO_TITLE, PLACEHOLDER_TITLE) and "--force" not in sys.argv:
+        print(f'Error: project.yaml already holds a paper ("{title}"); setup.py would '
+              "overwrite it with blank files. Re-run with --force if you really mean that.",
+              file=sys.stderr)
         sys.exit(1)
     main()

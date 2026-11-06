@@ -1,51 +1,21 @@
-# Two affiliations, one author (Kofi Mensah) belonging to both -- this is
-# the deliberate test case for the per-author-affiliation fix documented in
-# docs/02-comparison-matrix.md and implemented in template/js/people.js.
-#
 # NOTE: template/js/yaml-lite.js does not support flow-style lists
-# ("[a, b]") -- every list below (including a single-item affiliations
-# list) uses block style ("- a" on its own indented line).
+# ("[a, b]") -- every list (including a single-item affiliations list)
+# must use block style ("- a" on its own indented line).
 affiliations:
-  - id: oxu
+  - id: oxford
     name: University of Oxford
-    logo: assets/logos/oxu.svg
-  - id: aqi
-    name: Aquatic Intelligence Institute
-    logo: assets/logos/aqi.svg
+    logo: assets/logos/oxford.svg
 
 authors:
-  - name: Jane Smith
-    url: https://example.org/jane-smith
+  - name: Fabio J. Fehr
+    url: https://fjfehr.github.io/
     affiliations:
-      - oxu
-    equal_contribution: true
-    corresponding: false
-  - name: Amara Okafor
-    url: https://example.org/amara-okafor
-    affiliations:
-      - oxu
-    equal_contribution: true
-    corresponding: false
-  - name: Erik Lindqvist
-    url: null
-    affiliations:
-      - aqi
-    equal_contribution: false
-    corresponding: false
-  - name: Kofi Mensah
-    url: https://example.org/kofi-mensah
-    affiliations:
-      - oxu
-      - aqi
-    equal_contribution: false
-    corresponding: false
-  - name: Priya Shah
-    url: https://example.org/priya-shah
-    affiliations:
-      - aqi
+      - oxford
     equal_contribution: false
     corresponding: true
-
-correspondence:
-  name: Priya Shah
-  email: priya@example.org
+  - name: Philip Torr
+    url: https://scholar.google.com/citations?user=kPxa2w0AAAAJ&hl=en
+    affiliations:
+      - oxford
+    equal_contribution: false
+    corresponding: false

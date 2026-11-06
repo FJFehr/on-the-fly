@@ -1,2 +1,5 @@
 __pycache__/
 *.pyc
+
+# LaTeX paper source (local reference only; copy needed figures into assets/figures/)
+On_the_fly_Weight_Generation/

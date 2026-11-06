@@ -50,7 +50,9 @@
         li.appendChild(span);
       }
 
-      (author.affiliations || []).forEach(function (affId) {
+      // A single shared affiliation needs no numbering -- the logo row says it.
+      const numbered = (affiliations || []).length > 1;
+      (numbered ? author.affiliations || [] : []).forEach(function (affId) {
         const num = affIndex[affId];
         if (num === undefined) return; // unknown affiliation id -- skip rather than show "undefined"
         const sup = document.createElement("sup");

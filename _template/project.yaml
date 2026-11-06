@@ -1,9 +1,12 @@
 paper:
   title: "Your Paper Title"
-  short_title: "Short Title"          # nav wordmark; keep brief
+  short_title: "Short Title"          # nav wordmark + browser tab title; keep brief
+  wordmark_logo:                      # optional graphic after the nav wordmark (assets/ path)
+  wordmark_logo_dark:                 # optional; shown instead in dark mode
   description: "One or two sentences describing the paper. Used for the meta description, OpenGraph, and Twitter card."
   year: 2026
   venue: null                          # e.g. "NeurIPS 2026"; null shows no venue badge
+                                       # or a map: label, url, logo / logo_dark (assets/ paths), title (tooltip)
   doi: null
   arxiv: null                          # e.g. "2601.12345"; null shows a greyed-out arXiv button
 
@@ -16,6 +19,7 @@ resources:
   #   dataset: https://huggingface.co/datasets/...
   #   demo: https://...
   #   slides: https://...
+  #   contact: mailto:you@example.com    # email pill
   # Any other key still gets a button, with a generic link icon. A null value
   # shows a greyed-out button, so delete the line if you don't want one.
 
@@ -25,7 +29,7 @@ social:
   canonical_url: null                  # set once you know your GitHub Pages URL
 
 theme:
-  palette: teal                        # "teal" | "sage" | "gold" (see template/js/palettes.js)
+  palette: teal                        # "teal" | "sage" | "gold" | "mysterious_primary" (see template/js/palettes.js)
   mode: auto                           # "auto" | "light" | "dark" (initial only; visitor can still toggle)
   # Optional CSS custom-property overrides, one per indented line, e.g.
   #   --font-serif: "Georgia", serif
@@ -49,6 +53,7 @@ sections:
       - type: markdown
         source: content/overview.md
       - type: takeaways
+        # title: "Key Takeaways"          # optional heading above the cards
         source: content/takeaways.yaml
 
   - id: method
@@ -59,12 +64,16 @@ sections:
         source: content/method.md
       - type: table
         source: content/taxonomy.md
+        # caption: "Optional caption above the table (inline Markdown)."
       # A figure block needs a real image. Add your own under assets/figures/
       # and uncomment:
       # - type: figure
+      #   title: "Optional heading above the figure"
       #   src: assets/figures/your-figure.svg
+      #   src_dark: assets/figures/your-figure-dark.svg   # optional; shown instead in dark mode
       #   alt: "Describe the figure for screen readers."
       #   caption: "Figure 1. ..."
+      #   width: 60%                     # optional max width for small plots
       #   position: right        # left | right | center
 
   - id: results
@@ -77,8 +86,10 @@ sections:
         source: content/results.md
 
   - id: cite
-    title: Cite
+    title: Citation (BibTeX)
+    nav_title: Cite                      # optional shorter nav label
     nav: true
     blocks:
       - type: citation
         source: citation.bib
+        # note: "Presented at [Venue](https://...)."   # optional, shown above the BibTeX
