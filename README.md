@@ -6,20 +6,20 @@ Live at **https://fjfehr.github.io/on-the-fly/**.
 
 ## Links
 
+- 📄 [OpenReview](https://openreview.net/forum?id=7sT5TngD0m)
 - 📄 [arXiv](https://arxiv.org/abs/2610.00820)
 - 💻 [Code](https://github.com/FJFehr/on-the-fly-models)
 
 ## Citation
 
 ```bibtex
-@misc{fehr2026ontheflyweightgenerationhypernetwork,
-      title={On-the-fly Weight Generation: A Hypernetwork Proof of Concept on ARC-1D}, 
-      author={Fabio J. Fehr and Philip Torr},
-      year={2026},
-      eprint={2610.00820},
-      archivePrefix={arXiv},
-      primaryClass={cs.LG},
-      url={https://arxiv.org/abs/2610.00820}, 
+@inproceedings{
+fehr2026onthefly,
+title={On-the-fly Weight Generation: A Hypernetwork Proof of Concept on {ARC}-1D},
+author={Fabio James Fehr and Philip Torr},
+booktitle={Neural Network Artifacts as a New Data Modality},
+year={2026},
+url={https://openreview.net/forum?id=7sT5TngD0m}
 }
 ```
 
