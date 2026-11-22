@@ -1,8 +1,7 @@
 paper:
   title: "On-the-fly Weight Generation: A Hypernetwork Proof of Concept on ARC-1D"
   short_title: "On-the-fly Weights"          # nav wordmark + browser tab title; keep brief
-  wordmark_logo: assets/favicon-fly.svg      # optional graphic after the nav wordmark
-  wordmark_logo_dark: assets/favicon-fly-dark.svg   # optional; shown instead in dark mode
+  wordmark_logo: assets/favicon.svg          # optional graphic after the nav wordmark
   description: "A hypernetwork reads three examples of a task and writes all the weights of a tiny Transformer that solves it. On ARC-1D, few-shot context can be compiled on the fly into compact, executable model parameters."
   year: 2026
   venue:                               # a plain string, or a map like this one
@@ -17,6 +16,7 @@ paper:
 # One entry drives the hero, <title>, OpenGraph/Twitter/Scholar meta, and
 # citation UI. See docs/01-principles.md #2.
 resources:
+  openreview: https://openreview.net/forum?id=7sT5TngD0m
   code: https://github.com/FJFehr/on-the-fly-models
   contact: mailto:fabiofehr96@gmail.com
   # Add more buttons as you need them, for example:
@@ -30,7 +30,7 @@ resources:
 
 social:
   image: assets/og-image.svg           # OG/Twitter card image
-  favicon: assets/favicon-fly-auto.svg # teal fly, outline follows OS dark mode; alternative: assets/favicon.svg (3x3 tile grid)
+  favicon: assets/favicon.svg          # 3x3 tile grid
   canonical_url: https://fabiojfehr.com/on-the-fly/
 
 theme:
@@ -59,14 +59,30 @@ sections:
         source: content/tldr.md
       - type: figure
         title: Compiling Examples into Model Weights
+        # Slide-to-centre variant (not final, see GIF comparison): hypernetworks-focus.gif / hypernetworks-focus-dark.gif
         src: assets/figures/hypernetworks-generation.gif
         src_dark: assets/figures/hypernetworks-generation-dark.gif
         alt: "The hypernetwork encodes the three example pairs into a task vector, decodes it into the weights of a small Transformer, and that Transformer predicts the output for a new input."
         caption: "**Few-shot weight generation.** An encoder φ reads the three examples and summarises the task as a vector z. A decoder ψ turns z into every weight w of a small Transformer f. Once generated, f needs no examples: given only a new input x′, it predicts the output ŷ′."
         position: center
       - type: takeaways
-        title: Key Takeaways
+        title: Key Findings
         source: content/takeaways.yaml
+
+  - id: demo
+    title: Try It in Your Browser
+    nav_title: Demo
+    nav: true
+    blocks:
+      - type: markdown
+        source: content/demo.md
+      - type: custom
+        scripts:
+          - demo/hypernet.js
+          - demo/demo.js
+        stylesheet: demo/demo.css
+        render: renderOnTheFlyDemo
+        weights: demo/weights.json
 
   - id: method
     title: Method
@@ -74,18 +90,8 @@ sections:
     blocks:
       - type: markdown
         source: content/method.md
-
-  - id: data
-    title: Data (ARC-1D)
-    nav: false
-    blocks:
       - type: markdown
         source: content/data.md
-      - type: figure
-        src: assets/figures/arc1d-flip-episode.png
-        alt: "Three input–output pairs of coloured cell sequences in which a single marker cell moves from the left end of a block to its right end, followed by a query input whose output is unknown."
-        caption: "**Flip transformation: an example ARC-1D episode.** The three support pairs specify the transformation, which must be applied to the query input x′."
-        position: center
 
   - id: capacity
     title: Specialised Models Require Less Capacity
@@ -114,11 +120,6 @@ sections:
         position: center
       - type: markdown
         source: content/generation-space.md
-      - type: figure
-        src: assets/figures/weight-space-tsne.png
-        alt: "Two t-SNE scatter plots of generated weights coloured by transformation. Left, with a task ID, every transformation forms its own cluster. Right, without a task ID, clusters still form but related transformations overlap."
-        caption: "**Generated parameters form a task-structured weight space.** t-SNE of generated target-model parameters, coloured by transformation. **Left:** with a frozen task embedding, tasks are fully separable (100% linear-probe accuracy). **Right:** without task identity, structure emerges from the support examples alone (60.9%)."
-        position: center
 
   - id: generalisation
     title: Towards Generalisation with Hypernetworks
@@ -126,19 +127,8 @@ sections:
     blocks:
       - type: markdown
         source: content/generalisation.md
-      - type: figure
-        src: assets/figures/generalisation-loo.png
-        alt: "Bar chart of exact-match accuracy on the paired query versus queries from other episodes of the same transformation, with and without task ID. The bars are close in height."
-        caption: "**Generated specialists generalise across episodes.** Exact-match accuracy on the query paired with the generating support set and on queries from other episodes of the same transformation. Macro-average over 14 transformations, ±1 s.d."
-        position: center
-        width: 60%
       - type: markdown
         source: content/generalisation-comp.md
-      - type: figure
-        src: assets/figures/arc1d-comp-fill-mirror.png
-        alt: "Three input–output pairs of coloured cell sequences for the Fill ∘ Mirror composition, followed by a query input whose output is unknown."
-        caption: "**Fill ∘ Mirror: an example compositional ARC-1D episode.** The support pairs specify Mirror followed by Fill. Both are seen independently during training, but their composition is held out."
-        position: center
       - type: markdown
         source: content/generalisation-unseen.md
       - type: table
@@ -151,6 +141,16 @@ sections:
     blocks:
       - type: markdown
         source: content/going-beyond.md
+      - type: figure_row
+        figures:
+          - src: assets/figures/ablation-canon.png
+            alt: "Exact-match accuracy against parameter count with and without Canon layers, for individual models and joint models with and without task ID. Canon layers improve every setting, most at low capacity."
+            caption: "**Canon layers help, most at low capacity.** Solid: with Canon layers. Dashed: without. Bands show ±1 s.d. across 5 seeds."
+          - src: assets/figures/ablation-muon.png
+            alt: "Exact-match accuracy against parameter count with Muon and with AdamW, for individual models and joint models with and without task ID. Muon matches or exceeds AdamW in every setting."
+            caption: "**Muon matches or beats AdamW.** Solid: Muon. Dashed: AdamW. Bands show ±1 s.d. across 5 seeds."
+      - type: markdown
+        source: content/findings.md
 
   - id: cite
     title: Citation (BibTeX)
@@ -159,4 +159,4 @@ sections:
     blocks:
       - type: citation
         source: citation.bib
-        note: "Accepted as a 🔦 spotlight paper at the [NeurIPS 2026 Workshop on Neural Network Artifacts as a New Data Modality](https://artifactsasdata.org/)."
+        note: "Accepted as a 🔦 **spotlight** paper at the [NeurIPS 2026 Workshop on Neural Network Artifacts as a New Data Modality](https://artifactsasdata.org/)."

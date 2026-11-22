@@ -7,3 +7,5 @@
   anchor: "#generation"
 - title: "Generated specialists encode reusable functions and generalise beyond known transformations."
   anchor: "#generalisation"
+- title: "Try it live: generate a model from three examples, right in your browser."
+  anchor: "#demo"

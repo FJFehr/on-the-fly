@@ -1,3 +1,5 @@
+### Data: ARC-1D
+
 [ARC-1D](https://github.com/khalil-research/1D-ARC) is a one-dimensional
 variant of ARC-AGI. Inputs and outputs are sequences of coloured cells, and
 each transformation involves concepts such as objects, counting and spatial

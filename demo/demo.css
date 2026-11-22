@@ -1,0 +1,67 @@
+/* Interactive demo (demo/demo.js). Uses the page's theme tokens from template/css/style.css. */
+.otf-demo {
+  max-width: var(--prose-width); margin: 0 auto;
+  font-family: var(--font-sans); font-size: 0.95rem;
+}
+.otf-tabs, .otf-picks, .otf-palette { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.otf-tabs, .otf-picks, .otf-palette { justify-content: center; }
+.otf-tabs { margin-bottom: 20px; }
+.otf-demo .btn { cursor: pointer; font-family: inherit; }
+.otf-demo .btn[aria-pressed="true"] { border-color: var(--green-dark); background: var(--green-light); font-weight: 600; }
+.otf-primary { border-color: var(--green-dark); display: block; margin: 0 auto; }
+.otf-small { padding: 4px 12px; font-size: 0.85rem; }
+
+.otf-step {
+  background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: var(--radius); padding: 16px; margin-bottom: 14px;
+}
+main#main .otf-step-title { margin: 0 0 12px; font-size: 1rem; font-weight: 600; text-align: center; }
+.otf-pair + .otf-pair { margin-top: 10px; }
+.otf-line { display: flex; justify-content: center; align-items: center; gap: 10px; margin: 4px 0; }
+/* Spacer matching the label, so the row itself sits on the centre line. */
+.otf-line::after { content: ""; flex: 0 0 1.8em; }
+.otf-label { flex: 0 0 1.8em; font-family: var(--font-serif); font-style: italic; font-weight: 700; text-align: right; }
+
+/* Cells: full-colour outline, lighter fill (the paper figures' style). */
+.otf-row { flex: 0 1 auto; min-width: 0; display: grid; grid-template-columns: repeat(var(--n), minmax(0, 22px)); gap: 2px; }
+.otf-cell {
+  aspect-ratio: 1; min-width: 0; padding: 0; border-radius: 30%;
+  border: 1.5px solid var(--c, var(--color-text));
+  background: color-mix(in srgb, var(--c, transparent) 55%, var(--color-surface));
+  font: 700 0.7rem/1 var(--font-sans); color: var(--color-text);
+  display: flex; align-items: center; justify-content: center;
+}
+button.otf-cell { cursor: pointer; }
+button.otf-cell:hover { filter: brightness(1.12); }
+.otf-unknown { background: var(--color-surface); }
+.otf-swatch { width: 22px; }
+.otf-swatch[aria-pressed="true"] { outline: 2px solid var(--color-text); outline-offset: 2px; }
+.otf-picks, .otf-palette { margin-bottom: 10px; }
+.otf-hint { color: var(--color-text-muted); font-size: 0.85rem; margin-right: 4px; }
+
+.otf-status { margin: 10px 0 0; }
+
+/* Side-by-side models (stack on narrow screens). */
+.otf-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 12px; }
+@media (max-width: 600px) { .otf-columns { grid-template-columns: 1fr; } }
+main#main .otf-model-name { margin: 0 0 4px; font-family: var(--font-serif); font-size: 1.15rem; text-align: center; }
+.otf-column > .otf-hint { text-align: center; }
+.otf-column .otf-hint { margin: 0; }
+.otf-column .otf-status { margin-top: 4px; }
+.otf-caption { margin: 12px 0 2px; font-size: 0.9rem; text-align: center; }
+.otf-status:empty { display: none; }
+/* Task map, styled like the paper's t-SNE figure (serif labels, paper palette). */
+.otf-map-frame { position: relative; margin-top: 10px; }
+.otf-map { display: block; width: 100%; aspect-ratio: 1; cursor: crosshair; }
+.otf-tip {
+  position: absolute; transform: translate(-50%, calc(-100% - 10px)); pointer-events: none; white-space: nowrap;
+  padding: 2px 8px; border-radius: 4px; background: var(--color-text); color: var(--color-surface);
+  font: 1rem var(--font-serif);
+}
+.otf-tip[hidden] { display: none; }
+.otf-legend {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 16px; margin-top: 12px;
+  font-family: var(--font-serif); font-size: 1rem;
+}
+.otf-legend-item { display: inline-flex; align-items: center; gap: 6px; cursor: default; }
+.otf-legend-item::before { content: ""; width: 11px; height: 11px; border-radius: 50%; background: var(--c); opacity: 0.5; }

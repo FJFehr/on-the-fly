@@ -1,5 +1,5 @@
 We train a 10K-parameter hypernetwork across all 14 transformations. It maps
-the support set to the complete parameters of a 1.4K-parameter target model.
+the support set to all 1,204 weights of the target model.
 We compare generation from the support set alone with a variant that also
 receives a frozen task-ID embedding.
 

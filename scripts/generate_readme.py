@@ -30,12 +30,13 @@ TEMPLATE_REPO_URL = "https://github.com/FJFehr/paper-page"
 
 # (resources key, emoji, label) -- checked in this order after arXiv/paper.
 RESOURCE_ICONS = [
+    ("openreview", "📄", "OpenReview"),
     ("code", "💻", "Code"),
     ("dataset", "🤗", "Dataset"),
     ("demo", "🎥", "Demo"),
     ("slides", "📊", "Slides"),
 ]
-_HANDLED_RESOURCE_KEYS = {"paper", "code", "dataset", "demo", "slides"}
+_HANDLED_RESOURCE_KEYS = {"paper", "openreview", "code", "dataset", "demo", "slides"}
 
 
 def _surname(full_name: str) -> str:

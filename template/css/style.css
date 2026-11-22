@@ -293,7 +293,11 @@ figcaption { font-size: 0.88rem; color: var(--color-text-muted); margin-top: 8px
 }
 .results-table td.best { font-weight: 700; color: var(--orange-text); }
 
+.figure-row { display: flex; gap: 24px; max-width: var(--prose-width); margin: 24px auto; align-items: flex-start; }
+.figure-row figure { flex: 1 1 0; min-width: 0; margin: 0; }
+
 @media (max-width: 600px) {
+  .figure-row { flex-direction: column; }
   .md-table td:nth-child(3), .md-table th:nth-child(3) { display: none; }
   .md-table td, .md-table thead th { padding: 8px 10px; font-size: 0.85rem; }
   .fig-left, .fig-right { float: none; max-width: var(--prose-width); margin: 0.3em auto 1em; text-align: center; }

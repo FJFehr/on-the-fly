@@ -9,3 +9,7 @@ Generated weights could provide a form of task-specific pretraining, giving comp
 ### Future Directions
 
 Two directions are particularly interesting: extending weight generation to richer reasoning tasks such as ARC-AGI, potentially using looped or recursive specialists, and scaling to larger models through structured parameter spaces such as adapters or LoRA updates. More broadly, a large pretrained model could act as a model generator, constructing task-specific specialists on demand that can be further refined and deployed independently.
+
+### Practical Findings
+
+Two training choices mattered more than expected at this scale, and may help others training tiny models.

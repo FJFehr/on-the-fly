@@ -207,6 +207,7 @@
   const RESOURCE_MAP = {
     paper: { icon: ICON_DOCUMENT, label: "Paper" },
     arxiv: { icon: ICON_ARXIV, label: "arXiv", iconOnly: true },
+    openreview: { icon: ICON_DOCUMENT, label: "OpenReview" },
     code: { icon: ICON_GITHUB, label: "Code" },
     dataset: { icon: ICON_DATASET, label: "Dataset" },
     demo: { icon: ICON_PLAY, label: "Demo" },

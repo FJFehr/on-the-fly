@@ -78,6 +78,15 @@
       container.appendChild(figure);
     },
 
+    // Figures side by side: `figures` is a list of figure blocks (same keys
+    // as `figure`). Stacks on narrow screens.
+    figure_row: function (container, block) {
+      const row = document.createElement("div");
+      row.className = "figure-row";
+      (block.figures || []).forEach(function (fig) { renderers.figure(row, fig); });
+      container.appendChild(row);
+    },
+
     takeaways: function (container, block) {
       return fetchYaml(block.source)
         .then(function (items) {
@@ -167,6 +176,32 @@
           if (typeof window.renderBibtex === "function") window.renderBibtex(text);
         })
         .catch(function (err) { loadFailure(container, block.source, err); });
+    },
+
+    // Page-specific interactive content (e.g. a live demo): loads an optional
+    // stylesheet and the listed scripts in order, then calls the global
+    // function named by `render` with (container, block).
+    custom: function (container, block) {
+      if (block.stylesheet) {
+        const link = document.createElement("link");
+        link.rel = "stylesheet";
+        link.href = block.stylesheet;
+        document.head.appendChild(link);
+      }
+      const loadScript = function (src) {
+        return new Promise(function (resolve, reject) {
+          const script = document.createElement("script");
+          script.src = src;
+          script.onload = resolve;
+          script.onerror = function () { reject(new Error(src + " failed to load")); };
+          document.head.appendChild(script);
+        });
+      };
+      return (block.scripts || []).reduce(function (chain, src) {
+        return chain.then(function () { return loadScript(src); });
+      }, Promise.resolve())
+        .then(function () { return window[block.render](container, block); })
+        .catch(function (err) { loadFailure(container, block.render, err); });
     },
   };
 
