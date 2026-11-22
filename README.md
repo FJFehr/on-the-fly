@@ -2,7 +2,7 @@
 
 This is the academic project page for "On-the-fly Weight Generation: A Hypernetwork Proof of Concept on ARC-1D" (Fehr, Torr), University of Oxford.
 
-Live at **https://fjfehr.github.io/on-the-fly/**.
+Live at **https://fabiojfehr.com/on-the-fly/**.
 
 ## Links
 

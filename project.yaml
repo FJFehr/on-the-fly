@@ -31,7 +31,7 @@ resources:
 social:
   image: assets/og-image.svg           # OG/Twitter card image
   favicon: assets/favicon-fly-auto.svg # teal fly, outline follows OS dark mode; alternative: assets/favicon.svg (3x3 tile grid)
-  canonical_url: https://fjfehr.github.io/on-the-fly/
+  canonical_url: https://fabiojfehr.com/on-the-fly/
 
 theme:
   palette: mysterious_primary          # "teal" | "sage" | "gold" | "mysterious_primary" (see template/js/palettes.js)
