@@ -299,11 +299,13 @@
     const runStep = step("3. Run on new inputs",
       "Your model runs alone: the examples and the hypernetwork are no longer needed. Switch " +
       "inputs to reuse it.");
-    const closing = el("p", "otf-caption otf-closing",
-      "Now play with it! Repaint an example and watch where the stars move. Try a different " +
-      "input. What happens? Give the model with a task ID the wrong label and it follows the " +
-      "label, not the examples: ");
-    closing.appendChild(el("strong", null, "it cannot generalise beyond its labels."));
+    const closing = el("p", "otf-caption otf-closing");
+    closing.append(
+      el("strong", null, "Now play with it!"),
+      " Create a new task (1) and watch where the stars move (2). Try a different input (3). " +
+      "What happens? Give the model with a task ID the wrong label and it follows the " +
+      "label, not the examples: ",
+      el("strong", null, "it cannot generalise beyond its labels."));
     container.appendChild(closing);
 
     // Steps 1 and 3 share one layout, top to bottom: the graphic, the tools to edit it, the presets.

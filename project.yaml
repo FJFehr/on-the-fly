@@ -2,7 +2,7 @@ paper:
   title: "On-the-fly Weight Generation: A Hypernetwork Proof of Concept on ARC-1D"
   short_title: "On-the-fly Weights"          # nav wordmark + browser tab title; keep brief
   wordmark_logo: assets/favicon.svg          # optional graphic after the nav wordmark
-  description: "A hypernetwork reads three examples of a task and writes all the weights of a tiny Transformer that solves it. On ARC-1D, few-shot context can be compiled on the fly into compact, executable model parameters."
+  description: "On ARC-1D, a single hypernetwork generates the weights of tiny task-specific models from a few examples. The weights form a structured space, and the models partially generalise to compositions and transformations not seen during training."
   year: 2026
   venue:                               # a plain string, or a map like this one
     label: "Workshop (🔦 Spotlight)"
@@ -70,7 +70,7 @@ sections:
         still_dark: assets/figures/hypernetworks-full-dark.png
         play_ms: 19900
         alt: "The hypernetwork encodes the three example pairs into a task vector, decodes it into the weights of a small Transformer, and that Transformer predicts the output for a new input."
-        caption: 'An encoder $\phi_\omega$ reads the three support set examples $Z_{\mathcal E}$ and summarises the task as a vector $z_{\mathcal E}$. A decoder $\psi_\rho$ turns $z_{\mathcal E}$ into every weight $w_{\mathcal E}$ of a small Transformer $f(\cdot;w_{\mathcal E})$. Once generated, $f$ is decoupled and needs no examples: given an unseen query input $x^\prime$, it predicts the output $\hat y^\prime$.'
+        caption: 'An encoder $\phi_\omega$ maps the three support set examples $Z_{\mathcal E}$ to a task vector $z_{\mathcal E}$. A decoder $\psi_\rho$ turns $z_{\mathcal E}$ into every weight $w_{\mathcal E}$ of a small Transformer $f(\cdot;w_{\mathcal E})$. Once generated, $f$ is decoupled and needs no examples: given a new query input $x^\prime$, it predicts the output $\hat y^\prime$.'
         position: center
       - type: takeaways
         title: Key Findings
@@ -133,14 +133,14 @@ sections:
       - type: figure
         src: assets/figures/hypernet-per-task.png
         alt: "Bar chart of per-transformation exact-match accuracy for individually trained models and hypernetwork-generated models with and without task IDs. Generated models are close to individual models on most transformations."
-        caption: "**Generated models recover specialist performance.** Per-transformation exact-match validation accuracy at 1.4K parameters. Error bars show ±1 s.d. across 5 seeds."
+        caption: "**Generated models approach the accuracy of individually trained ones.** Per-transformation exact-match validation accuracy at 1.4K parameters. Error bars show ±1 s.d. across 5 seeds."
         position: center
       - type: markdown
         source: content/generation-reuse.md
       - type: figure
         src: assets/figures/weight-space-tsne.png
         alt: "Two t-SNE maps of generated models, coloured by transformation. With a task ID each transformation forms its own cluster. Without it, clusters remain but related transformations such as the Move variants overlap."
-        caption: "**Generated weights form a task-structured space.** t-SNE of the task representations from which the weights are generated, coloured by transformation. *Task ID*: transformations are fully separable (100% linear-probe accuracy). *w/o Task ID*: structure emerges from the support examples alone (60.9%)."
+        caption: "**Generated weights form a task-structured space.** t-SNE of the task vectors from which the weights are generated, coloured by transformation. *Task ID*: transformations are fully separable (100% linear-probe accuracy). *w/o Task ID*: structure emerges from the support examples alone (60.9%)."
         position: center
       - type: markdown
         source: content/generation-space.md
@@ -156,7 +156,6 @@ sections:
         alt: "An ARC-1D episode for the held-out composition Fill after Mirror: three input and output example pairs and a query input whose output must be predicted."
         caption: "**Fill ∘ Mirror: an example held-out composition.** The support pairs specify *Mirror* followed by *Fill*."
         position: center
-        margin: 48px
       - type: markdown
         source: content/generalisation-unseen.md
       - type: table

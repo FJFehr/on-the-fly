@@ -4,7 +4,7 @@
 # read alone, tell the story. Each body has two short parts: the first completes
 # the title, the second links to the next card. The anchor is its results section.
 # No result numbers here: the figures and tables carry those.
-- title: "Model capacity limits generalisation."
+- title: "Specialisation requires less capacity."
   body: "Learning all ARC-1D tasks at once requires more parameters, while an individual task needs only a tiny specialised model. *Could such models be generated at inference time?*"
   anchor: "#capacity"
 - title: "A hypernetwork can generate task-specific models on the fly."

@@ -1,5 +1,5 @@
 We show that a model with few parameters can solve an individual ARC-1D
-transformation. However, learning all 14 tasks jointly requires more capacity,
+transformation. However, learning all 14 jointly requires more capacity,
 and a task-ID embedding narrows the gap considerably. The burden therefore
 comes from holding many transformations in shared parameters and knowing when
 to apply them. Ideally, the model carrying out a transformation would be
