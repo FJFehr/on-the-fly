@@ -1,8 +1,5 @@
-Do the generated weights encode functions that work beyond the support set
-they came from? We test three settings.
-
-**Generate once, execute many.** For each transformation, we generate a model
-from one support set, freeze it, and run it on every other query of that
-transformation, with no further context or training. Accuracy stays close to
-that on the paired query, with or without task IDs. A generated specialist can
-be built once and reused.
+So far, every transformation was seen during training. Can the hypernetwork
+generate models for those it has never encountered? We test two settings.
+For **compositional generalisation**, we define 10 compositions of known
+transformations, such as *Fill* ∘ *Mirror*: each part is familiar, but their
+combination is new.

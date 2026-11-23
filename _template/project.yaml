@@ -71,6 +71,9 @@ sections:
       #   title: "Optional heading above the figure"
       #   src: assets/figures/your-figure.svg
       #   src_dark: assets/figures/your-figure-dark.svg   # optional; shown instead in dark mode
+      #   still: assets/figures/your-figure-still.png     # optional; makes src an animation that plays once
+      #   still_dark: assets/figures/your-figure-still-dark.png   #   (for play_ms), then fades to this still
+      #   play_ms: 12000                                  #   and replays when the theme changes
       #   alt: "Describe the figure for screen readers."
       #   caption: "Figure 1. ..."
       #   width: 60%                     # optional max width for small plots

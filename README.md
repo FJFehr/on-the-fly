@@ -1,14 +1,16 @@
-# On-the-fly Models
+# On-the-fly Weights
 
 This is the academic project page for "On-the-fly Weight Generation: A Hypernetwork Proof of Concept on ARC-1D" (Fehr, Torr), University of Oxford.
 
-Live at **https://fjfehr.github.io/on-the-fly/**.
+Live at **https://fabiojfehr.com/on-the-fly/**.
 
 ## Links
 
 - 📄 [OpenReview](https://openreview.net/forum?id=7sT5TngD0m)
 - 📄 [arXiv](https://arxiv.org/abs/2610.00820)
+- 📄 [OpenReview](https://openreview.net/forum?id=7sT5TngD0m)
 - 💻 [Code](https://github.com/FJFehr/on-the-fly-models)
+- 🔗 [Contact](mailto:fabiofehr96@gmail.com)
 
 ## Citation
 

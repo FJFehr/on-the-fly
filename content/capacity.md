@@ -1,10 +1,10 @@
-How much capacity does one ARC-1D transformation need? Individual models
-saturate at **98.9%** accuracy with only **2.4K parameters**. The same
-architecture reaches **74.0%** when trained jointly on all transformations,
-even when it is told which transformation to apply. More capacity closes the
-gap.
-
-So a single transformation is cheap to represent, but storing many in shared
-parameters is expensive. This motivates separating task inference from task
-execution: *given that a tiny network can represent each solution, can a
-hypernetwork learn to generate those networks from examples?*
+We hypothesise that the parameters a model requires grow with the number of
+tasks it must solve. To explore this, we train a three-layer Transformer at
+several widths, from 1.4K to 5.4K parameters, in two ways: as *individual
+models*, one per transformation, and as a *joint model* covering the whole
+task set. Every model maps one input to its output, without support examples;
+the joint model may also receive a *task ID*, a learned embedding which
+identifies the transformation to apply (analogous to HRM's `puzzle_id`
+in ARC-AGI). All models use
+[RoPE](https://doi.org/10.1016/j.neucom.2023.127063), together with
+[Canon layers](#ablation-canon) and the [Muon optimiser](#ablation-muon), both of which we ablate.

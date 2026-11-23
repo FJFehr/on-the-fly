@@ -7,8 +7,7 @@
 <!-- Favicon -- set once, matches project.yaml's social.favicon by hand until
      scripts/build.py exists to generate this from project.yaml directly
      (see tasks/00-overview.md's "out of scope" note). -->
-<link rel="icon" type="image/svg+xml" href="assets/favicon-fly-auto.svg">
-<!-- Alternative: <link rel="icon" type="image/svg+xml" href="assets/favicon.svg"> -->
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 
 <!-- ============================================================
      Metadata below is PLACEHOLDER, hand-authored to match this demo
@@ -19,19 +18,19 @@
      ============================================================ -->
 <!-- meta:start (scripts/setup.py replaces everything up to meta:end) -->
 <title>On-the-fly Weights</title>
-<meta name="description" content="A hypernetwork reads three examples of a task and writes all the weights of a tiny Transformer that solves it. On ARC-1D, few-shot context can be compiled on the fly into compact, executable model parameters.">
-<link rel="canonical" href="https://fjfehr.github.io/on-the-fly/">
+<meta name="description" content="On ARC-1D, a single hypernetwork generates the weights of tiny task-specific models from a few examples. The weights form a structured space, and the models partially generalise to compositions and transformations not seen during training.">
+<link rel="canonical" href="https://fabiojfehr.com/on-the-fly/">
 
 <meta property="og:type" content="article">
 <meta property="og:title" content="On-the-fly Weight Generation: A Hypernetwork Proof of Concept on ARC-1D">
-<meta property="og:description" content="A hypernetwork reads three examples of a task and writes all the weights of a tiny Transformer that solves it. On ARC-1D, few-shot context can be compiled on the fly into compact, executable model parameters.">
-<meta property="og:image" content="https://fjfehr.github.io/on-the-fly/assets/og-image.svg">
-<meta property="og:url" content="https://fjfehr.github.io/on-the-fly/">
+<meta property="og:description" content="On ARC-1D, a single hypernetwork generates the weights of tiny task-specific models from a few examples. The weights form a structured space, and the models partially generalise to compositions and transformations not seen during training.">
+<meta property="og:image" content="https://fabiojfehr.com/on-the-fly/assets/og-image.svg">
+<meta property="og:url" content="https://fabiojfehr.com/on-the-fly/">
 
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="On-the-fly Weight Generation: A Hypernetwork Proof of Concept on ARC-1D">
-<meta name="twitter:description" content="A hypernetwork reads three examples of a task and writes all the weights of a tiny Transformer that solves it. On ARC-1D, few-shot context can be compiled on the fly into compact, executable model parameters.">
-<meta name="twitter:image" content="https://fjfehr.github.io/on-the-fly/assets/og-image.svg">
+<meta name="twitter:description" content="On ARC-1D, a single hypernetwork generates the weights of tiny task-specific models from a few examples. The weights form a structured space, and the models partially generalise to compositions and transformations not seen during training.">
+<meta name="twitter:image" content="https://fabiojfehr.com/on-the-fly/assets/og-image.svg">
 
 <meta name="citation_title" content="On-the-fly Weight Generation: A Hypernetwork Proof of Concept on ARC-1D">
 <meta name="citation_author" content="Fehr, Fabio J.">
@@ -43,6 +42,8 @@
 <!-- meta:end -->
 
 <link rel="stylesheet" href="template/css/style.css">
+<!-- KaTeX (vendored, MIT): typesets $...$ in content as LaTeX maths, see template/js/markdown.js -->
+<link rel="stylesheet" href="template/vendor/katex/katex.min.css">
 
 <!-- Engine scripts, in dependency order -->
 <script src="template/js/palettes.js"></script>
@@ -132,6 +133,7 @@
      loaded in <head> already (palettes.js/theme.js needed pre-paint; yaml-lite.js
      is needed before render.js runs but has no pre-paint role). -->
 <script src="template/js/yaml-lite.js"></script>
+<script src="template/vendor/katex/katex.min.js"></script>
 <script src="template/js/markdown.js"></script>
 <script src="template/js/tables.js"></script>
 <script src="template/js/results-table.js"></script>
