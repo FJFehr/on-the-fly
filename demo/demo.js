@@ -17,7 +17,8 @@
     return e;
   }
 
-  // One sequence as a row of cells. `onCell` makes the cells clickable buttons.
+  // One sequence as a row of cells. `onCell` makes the cells clickable buttons; `wrong` flags
+  // the cells of a prediction that differ from the reference, which are then crossed.
   function row(values, opts) {
     opts = opts || {};
     const r = el("div", "otf-row");
@@ -26,6 +27,7 @@
       const c = el(opts.onCell ? "button" : "span", "otf-cell");
       if (v == null) { c.classList.add("otf-unknown"); c.textContent = "?"; }
       else c.style.setProperty("--c", COLORS[v]);
+      if (opts.wrong && opts.wrong[i]) c.classList.add("otf-wrong");
       if (opts.onCell) {
         c.type = "button";
         c.setAttribute("aria-label", "Cell " + (i + 1) + ", colour " + v);
@@ -60,11 +62,59 @@
     return box;
   }
 
-  function labelled(label, content) {
+  // Editing tools shown under an editable graphic, the same in steps 1 and 3: the colour picker
+  // in the middle and a reset button in the right corner, enabled once something was edited.
+  function tools(state, hint, onPick, resetLabel, edited, onReset) {
+    const box = el("div", "otf-tools");
+    const reset = el("button", "btn otf-small", resetLabel);
+    reset.type = "button";
+    reset.disabled = !edited;
+    reset.addEventListener("click", onReset);
+    box.append(palette(state, hint, onPick), reset);
+    return box;
+  }
+
+  // A row of preset buttons behind a short label, the same in steps 1 and 3.
+  function presets(label, ariaLabel) {
+    const box = el("div", "otf-presets");
+    box.setAttribute("role", "group");
+    box.setAttribute("aria-label", ariaLabel);
+    box.appendChild(el("span", "otf-hint", label));
+    return box;
+  }
+  function preset(text, onClick) {
+    const b = el("button", "btn otf-small otf-tab", text);
+    b.type = "button";
+    b.addEventListener("click", onClick);
+    return b;
+  }
+
+  // A row with its label typeset as in the paper: KaTeX (loaded by the page) sets the TeX, with
+  // an optional subscript index, in Computer Modern. Without KaTeX it falls back to italic text.
+  // `after` is an optional element shown to the right of the row.
+  function labelled(tex, content, index, after) {
     const line = el("div", "otf-line");
-    line.appendChild(el("span", "otf-label", label));
-    line.appendChild(content);
+    const label = el("span", "otf-label");
+    if (window.katex) {
+      window.katex.render(tex + (index != null ? "_" + index : ""), label, { throwOnError: false });
+    } else {
+      label.textContent = tex.replace("\\hat{y}", "ŷ").replace(/'/g, "′");
+      if (index != null) label.appendChild(el("sub", null, String(index)));
+    }
+    line.append(label, content, after || el("span", "otf-after"));
     return line;
+  }
+
+  // Right of a prediction: a tick, or a cross with the number of wrong cells. The words are
+  // dropped where the row leaves no room for them (long sequences, narrow screens).
+  function verdict(wrongCount, length) {
+    const ok = wrongCount === 0;
+    const v = el("span", "otf-after otf-verdict " + (ok ? "otf-ok" : "otf-bad"), ok ? "✓" : "✗ " + wrongCount);
+    v.appendChild(el("span", "otf-verdict-text", ok ? " correct" : " wrong"));
+    if (length > 20) v.classList.add("otf-compact");
+    v.setAttribute("role", "img");
+    v.setAttribute("aria-label", ok ? "Correct" : wrongCount + " cell" + (wrongCount > 1 ? "s" : "") + " wrong");
+    return v;
   }
 
   // t-SNE map of the task vectors z of 1,400 held-out episodes (from export_weights.py),
@@ -72,7 +122,7 @@
   // grid, left/bottom axes only. A new model is a star at the inverse-distance-weighted mean
   // position of its k nearest episodes in z: t-SNE cannot add a point to a finished map.
   function taskMap(canvas, tip, map, categories) {
-    const K = 10, PAD = 14;
+    const K = 10, PAD = 14, EDGE = 1.25, FILL = 0.3;  // edge width; opacity of a dot's fill
     let marker = null, from = null, start = 0, hover = -1;
     const css = function (name) { return getComputedStyle(canvas).getPropertyValue(name).trim(); };
     // Dot radius scales with the canvas; dots are inset from the axes so none cross them.
@@ -106,28 +156,33 @@
       }
       ctx.globalAlpha = 0.6; ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(PAD, PAD); ctx.lineTo(PAD, size - PAD); ctx.lineTo(size - PAD, size - PAD); ctx.stroke();
-      // Points: a bit larger than the paper figure's markers. Each task is drawn opaque on its
-      // own layer, then composited see-through: each blob is ~20 overlapping colour variants of
-      // one puzzle, so per-dot alpha would stack back to opaque. While a task is highlighted,
-      // the others are grey and the highlighted task is drawn last.
+      // Points: a bit larger than the paper figure's markers, styled like the cells: full-colour
+      // edge, lighter see-through fill. Each task is drawn on its own layer, where a dot first erases
+      // what is under it: each blob is ~20 overlapping colour variants of one puzzle, so stacked
+      // see-through fills would turn opaque. While a task is highlighted, the others are grey
+      // and the highlighted task is drawn last.
       const r = radius(size), grey = css("--color-border");
       const layer = document.createElement("canvas");
       layer.width = layer.height = size * ratio;
       const lctx = layer.getContext("2d");
       lctx.scale(ratio, ratio);
+      lctx.lineWidth = EDGE;
       const order = categories.map(function (_, c) { return c; })
         .sort(function (a, b) { return (a === hover) - (b === hover); });
       order.forEach(function (c) {
         const other = hover >= 0 && c !== hover;
         lctx.clearRect(0, 0, size, size);
-        lctx.fillStyle = other ? grey : categories[c].color;
+        lctx.fillStyle = lctx.strokeStyle = other ? grey : categories[c].color;
         map.xy.forEach(function (xy, i) {
           if (map.category[i] !== c) return;
           const q = toPx(xy, size);
-          lctx.beginPath(); lctx.arc(q[0], q[1], r, 0, 2 * Math.PI); lctx.fill();
+          lctx.beginPath(); lctx.arc(q[0], q[1], r - EDGE / 2, 0, 2 * Math.PI);
+          lctx.globalCompositeOperation = "destination-out"; lctx.globalAlpha = 1; lctx.fill();
+          lctx.globalCompositeOperation = "source-over"; lctx.globalAlpha = FILL; lctx.fill();
+          lctx.globalAlpha = 1; lctx.stroke();
         });
         ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0);
-        ctx.globalAlpha = other ? 0.5 : 0.55;
+        ctx.globalAlpha = other ? 0.6 : 1;
         ctx.drawImage(layer, 0, 0);
         ctx.restore();
       });
@@ -219,7 +274,9 @@
                name: m.uses_task_id ? "With task ID" : "Without task ID" };
     }).sort(function (a, b) { return b.usesTaskId - a.usesTaskId; });
     // support: the (editable) three examples.
-    const state = { task: null, support: null, examplesEdited: false,
+    // given: index of the preset whose task ID the "with task ID" model is told. It follows the
+    // chosen task until the visitor picks another label in step 2.
+    const state = { task: null, support: null, examplesEdited: false, given: 0,
                     weights: null, query: 0, input: null, edited: false, paint: 1 };
     const copySupport = function (p) {
       return [p.support_inputs, p.support_outputs].map(function (rows) {
@@ -227,61 +284,93 @@
       });
     };
 
-    const tabs = el("div", "otf-tabs");
-    tabs.setAttribute("role", "group");
-    tabs.setAttribute("aria-label", "Task");
-    const support = el("div", "otf-step");
-    const generateStep = el("div", "otf-step");
-    const runStep = el("div", "otf-step");
-    container.append(tabs, support, generateStep, runStep);
+    // Each step is a title, the box holding its interactive parts, then a caption that says what
+    // the step showed and points to the next one.
+    const step = function (title, caption) {
+      const box = el("div", "otf-step");
+      container.append(el("h3", "otf-step-title", title), box, el("p", "otf-caption", caption));
+      return box;
+    };
+    const support = step("1. Create your task",
+      "Three examples define the task. Repaint any cell to create your own, then generate your model.");
+    const generateStep = step("2. Generate your model",
+      "Each dot is a model generated for a held-out example, and models of the same task cluster " +
+      "together. The star is yours: run it below.");
+    const runStep = step("3. Run on new inputs",
+      "Your model runs alone: the examples and the hypernetwork are no longer needed. Switch " +
+      "inputs to reuse it.");
+    const closing = el("p", "otf-caption otf-closing",
+      "Now play with it! Repaint an example and watch where the stars move. Try a different " +
+      "input. What happens? Give the model with a task ID the wrong label and it follows the " +
+      "label, not the examples: ");
+    closing.appendChild(el("strong", null, "it cannot generalise beyond its labels."));
+    container.appendChild(closing);
 
-    data.presets.forEach(function (preset, i) {
-      const b = el("button", "btn otf-tab", preset.label);
-      b.type = "button";
-      b.addEventListener("click", function () { selectTask(i); });
-      tabs.appendChild(b);
+    // Steps 1 and 3 share one layout, top to bottom: the graphic, the tools to edit it, the presets.
+    const tabs = presets("Task:", "Task");
+    const examples = el("div");
+    support.append(examples, tabs);
+    const taskButtons = data.presets.map(function (p, i) {
+      return tabs.appendChild(preset(p.label, function () { selectTask(i); }));
     });
 
     // --- Step 1: the three examples --------------------------------------------
     // Every cell is editable; each edit regenerates both models (if generated already).
     function renderSupport() {
-      support.replaceChildren(el("h3", "otf-step-title", "1. Three examples of the task"));
-      const tools = palette(state, "Edit the examples: pick a colour, then click cells.", function () { renderSupport(); renderRun(); });
-      const reset = el("button", "btn otf-small", "Reset examples");
-      reset.type = "button";
-      reset.disabled = !state.examplesEdited;
-      reset.addEventListener("click", function () {
-        state.support = copySupport(state.task);
-        state.examplesEdited = false;
-        renderSupport();
-        if (state.weights) generate();
-      });
-      tools.appendChild(reset);
-      support.appendChild(tools);
+      examples.replaceChildren();
       for (let e = 0; e < 3; e++) {
         const pair = el("div", "otf-pair");
         [0, 1].forEach(function (side) {
           const seq = state.support[side][e];
-          pair.appendChild(labelled((side ? "y" : "x") + (e + 1), row(seq, {
+          pair.appendChild(labelled(side ? "y" : "x", row(seq, {
             onCell: function (i) {
               const orig = (side ? state.task.support_outputs : state.task.support_inputs)[e][i];
               seq[i] = paintCell(seq[i], orig, state.paint);
               state.examplesEdited = true;
               renderSupport();
-              if (state.weights) generate();
+              if (state.weights) generate(); else renderRun();
             },
-          })));
+          }), e + 1));
         });
-        support.appendChild(pair);
+        examples.appendChild(pair);
       }
+      examples.appendChild(tools(state, "Repaint: pick a colour, then click cells.",
+        function () { renderSupport(); renderRun(); }, "Reset examples", state.examplesEdited,
+        function () {
+          state.support = copySupport(state.task);
+          state.examplesEdited = false;
+          renderSupport();
+          if (state.weights) generate(); else renderRun();
+        }));
     }
 
     // --- Step 2: both hypernetworks write a model --------------------------------
-    const genButton = el("button", "btn otf-primary", "Generate both models' weights");
+    const genButton = el("button", "btn otf-primary", "Generate both models");
     genButton.type = "button";
     const columns = el("div", "otf-columns");
+    // What each hypernetwork is given, under its name. The one with a task ID lets the visitor
+    // choose which label it is told, so a wrong label can be tried against the same examples.
+    let givenSelect = null;
     const panels = models.map(function (model) {
       const col = el("div", "otf-column");
+      const given = el("p", "otf-hint otf-given");
+      if (model.usesTaskId) {
+        const label = el("label", null, "Examples and a task ID: ");
+        givenSelect = el("select", "otf-select");
+        data.presets.forEach(function (p, i) {
+          const option = el("option", null, p.label);
+          option.value = String(i);
+          givenSelect.appendChild(option);
+        });
+        givenSelect.addEventListener("change", function () {
+          state.given = Number(givenSelect.value);
+          if (state.weights) generate();
+        });
+        label.appendChild(givenSelect);
+        given.appendChild(label);
+      } else {
+        given.textContent = "Examples only";
+      }
       const mapCanvas = el("canvas", "otf-map");
       mapCanvas.setAttribute("role", "img");
       mapCanvas.setAttribute("aria-label", model.name + ": t-SNE map of the task vectors of " +
@@ -291,18 +380,17 @@
       const frame = el("div", "otf-map-frame");
       frame.append(mapCanvas, tip);
       const nearest = el("p", "otf-hint otf-nearest");
-      col.append(el("h4", "otf-model-name", model.name), frame, nearest);
+      col.append(el("h4", "otf-model-name", model.name), given, frame, nearest);
       columns.appendChild(col);
       return { map: taskMap(mapCanvas, tip, model.map, data.categories), nearest: nearest };
     });
-    generateStep.append(el("h3", "otf-step-title", "2. Generate two models"),
-                        genButton, columns,
+    generateStep.append(genButton, columns,
                         legend(data.categories, panels.map(function (p) { return p.map; })));
     function generate() {
       state.weights = models.map(function (model, k) {
-        const z = model.m.encode(state.support[0], state.support[1], state.task.task_index);
+        const z = model.m.encode(state.support[0], state.support[1], data.presets[state.given].task_index);
         const c = panels[k].map.place(z);
-        panels[k].nearest.textContent = "Star lands nearest to: " + data.categories[c].label;
+        panels[k].nearest.textContent = "Your model lands nearest to: " + data.categories[c].label;
         return model.m.decode(z);
       });
       renderRun();
@@ -312,27 +400,9 @@
     // --- Step 3: run both generated models on the same new input -----------------
     function renderRun() {
       const p = state.task;
-      runStep.replaceChildren(el("h3", "otf-step-title", "3. Run both models on a new input"));
+      runStep.replaceChildren();
 
-      const picks = el("div", "otf-picks");
-      picks.appendChild(el("span", "otf-hint", "New input:"));
-      p.queries.forEach(function (q, i) {
-        const b = el("button", "btn otf-small", String(i + 1));
-        b.type = "button";
-        b.setAttribute("aria-label", "Input " + (i + 1));
-        b.setAttribute("aria-pressed", String(!state.edited && state.query === i));
-        b.addEventListener("click", function () { setQuery(i); });
-        picks.appendChild(b);
-      });
-      const reset = el("button", "btn otf-small", "Reset");
-      reset.type = "button";
-      reset.addEventListener("click", function () { setQuery(state.query); });
-      picks.appendChild(reset);
-      runStep.appendChild(picks);
-
-      runStep.appendChild(palette(state, "Or paint your own:", function () { renderRun(); renderSupport(); }));
-
-      runStep.appendChild(labelled("x′", row(state.input, {
+      runStep.appendChild(labelled("x'", row(state.input, {
         onCell: function (i) {
           state.input[i] = paintCell(state.input[i], state.task.queries[state.query].input[i], state.paint);
           state.edited = true;
@@ -340,27 +410,35 @@
         },
       })));
 
-      const expected = state.edited ? null : p.queries[state.query].output;
-      if (expected) runStep.appendChild(labelled("y′", row(expected)));
+      // The reference answer belongs to the preset task and input: once either the examples or
+      // the input are repainted it no longer applies, so it is hidden.
+      const expected = state.edited || state.examplesEdited ? null : p.queries[state.query].output;
+      if (expected) runStep.appendChild(labelled("y'", row(expected)));
 
       models.forEach(function (model, k) {
-        const caption = el("p", "otf-caption");
-        caption.appendChild(el("strong", null, model.name));
-        runStep.appendChild(caption);
+        runStep.appendChild(el("h4", "otf-model-name", model.name));
         if (!state.weights) {
-          runStep.appendChild(labelled("ŷ′", row(state.input.map(function () { return null; }))));
-          caption.append(": generate weights first");
+          runStep.appendChild(labelled("\\hat{y}'", row(state.input.map(function () { return null; }))));
           return;
         }
         const prediction = model.m.predict(state.weights[k], state.input);
         const wrong = expected && prediction.map(function (v, i) { return v !== expected[i]; });
-        runStep.appendChild(labelled("ŷ′", row(prediction, { wrong: wrong })));
-        if (expected) {
-          const n = wrong.filter(Boolean).length;
-          caption.append(": " + (n === 0 ? "✓ correct" : "✗ " + n + " cell" + (n > 1 ? "s" : "") + " wrong"));
-        }
+        runStep.appendChild(labelled("\\hat{y}'", row(prediction, { wrong: wrong }), null,
+          expected && verdict(wrong.filter(Boolean).length, prediction.length)));
       });
+      if (!state.weights) runStep.appendChild(el("p", "otf-hint otf-note", "Generate your model above to see its predictions."));
 
+      runStep.appendChild(tools(state, "Repaint: pick a colour, then click cells.",
+        function () { renderRun(); renderSupport(); }, "Reset input", state.edited,
+        function () { setQuery(state.query); }));
+
+      const picks = presets("Input:", "New input");
+      p.queries.forEach(function (q, i) {
+        const b = picks.appendChild(preset(String(i + 1), function () { setQuery(i); }));
+        b.setAttribute("aria-label", "Input " + (i + 1));
+        b.setAttribute("aria-pressed", String(!state.edited && state.query === i));
+      });
+      runStep.appendChild(picks);
     }
 
     function setQuery(i) {
@@ -375,7 +453,9 @@
       state.support = copySupport(state.task);
       state.examplesEdited = false;
       state.weights = null;
-      Array.from(tabs.children).forEach(function (b, j) { b.setAttribute("aria-pressed", String(i === j)); });
+      state.given = i;
+      if (givenSelect) givenSelect.value = String(i);
+      taskButtons.forEach(function (b, j) { b.setAttribute("aria-pressed", String(i === j)); });
       panels.forEach(function (panel) {
         panel.map.clear();
         panel.nearest.textContent = "";

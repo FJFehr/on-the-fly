@@ -27,13 +27,37 @@ function escapeHtml(str) {
 // first so a URL's own characters (parens aside) can't be mistaken for
 // ** / * / ` markers, and the emitted <a> tag can't be corrupted by the
 // later substitutions (ported from legal-reward-bench's content.js).
+//
+// Inline maths: $...$ is typeset by KaTeX (template/vendor/katex, loaded by
+// index.html) in LaTeX's own Computer Modern, so symbols match the paper. It
+// is cut out before the Markdown passes and put back after them, so TeX's
+// own * and _ are left alone. Pandoc's rule keeps prices such as "$5 and
+// $10" as text: no space just inside either dollar, no digit after the
+// closing one. Without KaTeX the TeX source is shown in italics.
+function mdMath(tex) {
+  if (typeof katex !== "undefined") {
+    try { return katex.renderToString(tex, { throwOnError: false }); } catch (e) { /* fall through */ }
+  }
+  return "<em>" + escapeHtml(tex) + "</em>";
+}
+
 function mdInline(text) {
-  let s = escapeHtml(text);
-  s = s.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+  const maths = [];
+  let s = String(text).replace(/\$(?!\s)([^$\n]*?[^$\s])\$(?!\d)/g, function (_, tex) {
+    maths.push(mdMath(tex));
+    return "\u0000" + (maths.length - 1) + "\u0000";
+  });
+  s = escapeHtml(s);
+  // Inline icon: ![alt](src) renders at text height, like an emoji.
+  s = s.replace(/!\[([^\]]*)\]\(([^)\s]+)\)/g, '<img class="inline-icon" src="$2" alt="$1">');
+  // In-page (#id) links scroll in the same tab; everything else opens a new one.
+  s = s.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, function (_, label, href) {
+    return '<a href="' + href + '"' + (href.charAt(0) === "#" ? "" : ' target="_blank" rel="noopener"') + ">" + label + "</a>";
+  });
   s = s.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
   s = s.replace(/\*(.+?)\*/g, "<em>$1</em>");
   s = s.replace(/`(.+?)`/g, "<code>$1</code>");
-  return s;
+  return s.replace(/\u0000(\d+)\u0000/g, function (_, i) { return maths[Number(i)]; });
 }
 
 // Strips a leading Markdown heading marker ("#", "##", ...), if any -- used

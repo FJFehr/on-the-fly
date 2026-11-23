@@ -32,6 +32,72 @@
       "serve this folder over http:// (not file://).";
   }
 
+  // A figure whose `src` is an animation that should be watched once, not looped: it plays
+  // for `play_ms`, fades out, and the `still` image fades in and stays. Changing the theme
+  // replays it in the new theme. Visitors who ask for reduced motion only get the still, and
+  // so does anyone whose connection has not delivered the animation within WAIT_MS: content
+  // first, rather than an empty box or an animation that starts while they are reading.
+  const WAIT_MS = 1500;
+  function playOnceFigure(figure, block) {
+    const stage = document.createElement("div");
+    stage.className = "figure-stage";
+    stage.setAttribute("role", "img");
+    stage.setAttribute("aria-label", block.alt || "");
+    const still = document.createElement("img");
+    const anim = document.createElement("img");
+    still.className = "figure-still";
+    anim.className = "figure-anim";
+    still.alt = anim.alt = "";
+    stage.append(still, anim);
+    figure.appendChild(stage);
+
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const themed = function (light, dark) {
+      return dark && document.documentElement.getAttribute("data-theme") === "dark" ? dark : light;
+    };
+    const blobs = {};   // animation URL -> Promise<Blob>, so each file is downloaded once
+    let run = 0, timer = null, objectUrl = null;
+
+    function setState(state) {
+      stage.classList.toggle("is-waiting", state === "waiting");
+      stage.classList.toggle("is-playing", state === "playing");
+    }
+
+    function play() {
+      const id = ++run;   // a later play() (another theme change) cancels this one
+      clearTimeout(timer);
+      still.src = themed(block.still, block.still_dark);
+      if (reducedMotion.matches) return setState("resting");
+      setState("waiting");
+      timer = setTimeout(function () { if (id === run) { run += 1; setState("resting"); } }, WAIT_MS);
+      const url = themed(block.src, block.src_dark);
+      blobs[url] = blobs[url] || fetch(url).then(function (res) {
+        if (!res.ok) throw new Error(url + " responded " + res.status);
+        return res.blob();
+      });
+      blobs[url].then(function (blob) {
+        if (id !== run) return;
+        // A new object URL is a new image to the browser, so its animation starts from the
+        // first frame. Re-using the file's own URL would resume or skip the replay.
+        if (objectUrl) URL.revokeObjectURL(objectUrl);
+        objectUrl = URL.createObjectURL(blob);
+        anim.onload = function () {
+          if (id !== run) return;
+          clearTimeout(timer);
+          setState("playing");
+          timer = setTimeout(function () { if (id === run) setState("resting"); }, Number(block.play_ms) || 0);
+        };
+        anim.src = objectUrl;
+      }).catch(function (err) {
+        console.error("Failed to load " + url + ":", err);
+        if (id === run) { clearTimeout(timer); setState("resting"); }
+      });
+    }
+
+    new MutationObserver(play).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    play();
+  }
+
   const renderers = {
     markdown: function (container, block) {
       container.classList.add("block-markdown");
@@ -50,25 +116,32 @@
         container.appendChild(h2);
       }
       const figure = document.createElement("figure");
+      if (block.id) figure.id = block.id;  // optional: lets prose link to this figure with (#id)
       if (block.position === "left" || block.position === "right") {
         figure.classList.add("fig-" + block.position);
       }
       // Optional width (any CSS length, e.g. "60%") for small plots that
       // would otherwise stretch to the full prose width.
       if (block.width) figure.style.maxWidth = block.width;
-      const img = document.createElement("img");
-      img.src = block.src;
-      img.alt = block.alt || "";
-      figure.appendChild(img);
-      // Optional dark-theme variant: render both, CSS shows the one that
-      // matches the active [data-theme] (tasks/11, gap 1).
-      if (block.src_dark) {
-        img.classList.add("figure-light");
-        const imgDark = document.createElement("img");
-        imgDark.src = block.src_dark;
-        imgDark.alt = block.alt || "";
-        imgDark.className = "figure-dark";
-        figure.appendChild(imgDark);
+      if (block.still) {
+        // Optional `still` (+ `still_dark`, `play_ms`): `src` is an animation that plays
+        // once and then gives way to the still.
+        playOnceFigure(figure, block);
+      } else {
+        const img = document.createElement("img");
+        img.src = block.src;
+        img.alt = block.alt || "";
+        figure.appendChild(img);
+        // Optional dark-theme variant: render both, CSS shows the one that
+        // matches the active [data-theme] (tasks/11, gap 1).
+        if (block.src_dark) {
+          img.classList.add("figure-light");
+          const imgDark = document.createElement("img");
+          imgDark.src = block.src_dark;
+          imgDark.alt = block.alt || "";
+          imgDark.className = "figure-dark";
+          figure.appendChild(imgDark);
+        }
       }
       if (block.caption) {
         const figcaption = document.createElement("figcaption");

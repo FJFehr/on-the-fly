@@ -3,9 +3,9 @@
   max-width: var(--prose-width); margin: 0 auto;
   font-family: var(--font-sans); font-size: 0.95rem;
 }
-.otf-tabs, .otf-picks, .otf-palette { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-.otf-tabs, .otf-picks, .otf-palette { justify-content: center; }
-.otf-tabs { margin-bottom: 20px; }
+/* One vertical rhythm inside every step: 16px between its blocks. */
+.otf-presets, .otf-palette { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; }
+.otf-presets, .otf-tools, .otf-columns, .otf-legend { margin-top: 16px; }
 .otf-demo .btn { cursor: pointer; font-family: inherit; }
 .otf-demo .btn[aria-pressed="true"] { border-color: var(--green-dark); background: var(--green-light); font-weight: 600; }
 .otf-primary { border-color: var(--green-dark); display: block; margin: 0 auto; }
@@ -13,14 +13,39 @@
 
 .otf-step {
   background: var(--color-surface); border: 1px solid var(--color-border);
-  border-radius: var(--radius); padding: 16px; margin-bottom: 14px;
+  border-radius: var(--radius); padding: 16px;
 }
-main#main .otf-step-title { margin: 0 0 12px; font-size: 1rem; font-weight: 600; text-align: center; }
-.otf-pair + .otf-pair { margin-top: 10px; }
+/* Step titles sit above their box, outside the interactive area. */
+main#main .otf-step-title { margin: 36px 0 14px; font-size: 1.35rem; font-weight: 700; text-align: center; }
+/* Caption under each step's box, styled like a figure caption. */
+main#main .otf-caption { margin: 12px 0 0; font-size: 0.9rem; color: var(--color-text-muted); text-align: center; }
+main#main .otf-closing { margin-top: 28px; font-size: 1rem; color: var(--color-text); }
+.otf-pair + .otf-pair { margin-top: 18px; }
+/* Editing tools under the examples: the palette stays on the centre line (equal side columns),
+   the reset button sits in the right corner. On narrow screens the button drops below. */
+.otf-tools { display: grid; grid-template-columns: minmax(8.5em, 1fr) minmax(0, auto) minmax(8.5em, 1fr); align-items: center; }
+.otf-tools .otf-palette { grid-column: 2; }
+/* The hint takes its own line, so the ten colours stay together on the next. */
+.otf-tools .otf-hint { flex: 0 0 100%; margin-right: 0; text-align: center; }
+.otf-tools .otf-small { grid-column: 3; justify-self: end; white-space: nowrap; }
+@media (max-width: 600px) {
+  .otf-tools { grid-template-columns: 1fr; gap: 8px; }
+  .otf-tools .otf-palette, .otf-tools .otf-small { grid-column: 1; }
+}
 .otf-line { display: flex; justify-content: center; align-items: center; gap: 10px; margin: 4px 0; }
-/* Spacer matching the label, so the row itself sits on the centre line. */
-.otf-line::after { content: ""; flex: 0 0 1.8em; }
-.otf-label { flex: 0 0 1.8em; font-family: var(--font-serif); font-style: italic; font-weight: 700; text-align: right; }
+/* The slot after the row matches the label's width, so the row itself sits on the centre line. */
+.otf-after { flex: 0 0 2rem; min-width: 0; }
+/* Verdict on a prediction: it overflows its slot to the right without moving the row. */
+.otf-verdict { white-space: nowrap; font-size: 0.9rem; font-weight: 700; line-height: 1; }
+.otf-ok { color: var(--green-text); }
+.otf-bad { color: var(--orange-text); }
+.otf-compact .otf-verdict-text { display: none; }
+@media (max-width: 720px) { .otf-verdict-text { display: none; } }
+/* Labels are typeset by KaTeX in the paper's maths font. The Times italic here is only the
+   fallback for when KaTeX is not loaded. */
+.otf-label { flex: 0 0 2rem; font: italic 400 1.15rem/1 "Times New Roman", Times, serif; text-align: right; }
+.otf-label .katex { font-size: 1em; }
+.otf-label sub { font-style: normal; font-size: 0.7em; line-height: 0; }
 
 /* Cells: full-colour outline, lighter fill (the paper figures' style). */
 .otf-row { flex: 0 1 auto; min-width: 0; display: grid; grid-template-columns: repeat(var(--n), minmax(0, 22px)); gap: 2px; }
@@ -34,21 +59,41 @@ main#main .otf-step-title { margin: 0 0 12px; font-size: 1rem; font-weight: 600;
 button.otf-cell { cursor: pointer; }
 button.otf-cell:hover { filter: brightness(1.12); }
 .otf-unknown { background: var(--color-surface); }
+/* A predicted cell that differs from the reference: neutral border and a thin drawn cross,
+   which scales with the cell (text would not shrink on narrow screens). The mark is a softened
+   text colour, so the cell's own colour stays readable under it in both themes. */
+.otf-wrong {
+  --mark: color-mix(in srgb, var(--color-text) 70%, transparent);
+  border-color: var(--mark);
+  background-image:
+    linear-gradient(45deg, transparent 46%, var(--mark) 46% 54%, transparent 54%),
+    linear-gradient(-45deg, transparent 46%, var(--mark) 46% 54%, transparent 54%);
+  background-size: 70% 70%; background-position: center; background-repeat: no-repeat;
+}
 .otf-swatch { width: 22px; }
 .otf-swatch[aria-pressed="true"] { outline: 2px solid var(--color-text); outline-offset: 2px; }
-.otf-picks, .otf-palette { margin-bottom: 10px; }
 .otf-hint { color: var(--color-text-muted); font-size: 0.85rem; margin-right: 4px; }
 
 .otf-status { margin: 10px 0 0; }
 
 /* Side-by-side models (stack on narrow screens). */
-.otf-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 12px; }
+.otf-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 @media (max-width: 600px) { .otf-columns { grid-template-columns: 1fr; } }
+/* A model's name: the same heading over its map (step 2) and over its prediction (step 3). */
 main#main .otf-model-name { margin: 0 0 4px; font-family: var(--font-serif); font-size: 1.15rem; text-align: center; }
+main#main .otf-line + .otf-model-name { margin-top: 14px; }
+/* What each hypernetwork is given: one line of equal height in both columns, so the maps align. */
+.otf-given { min-height: 2em; display: flex; align-items: center; justify-content: center; }
+.otf-select {
+  margin-left: 6px; padding: 2px 6px; font: inherit; color: var(--color-text);
+  background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 6px;
+}
+/* Reserved line under each map, so the step does not grow when the star is placed. */
+.otf-nearest { min-height: 1.5em; }
+.otf-note { margin: 12px 0 0; text-align: center; }
 .otf-column > .otf-hint { text-align: center; }
 .otf-column .otf-hint { margin: 0; }
 .otf-column .otf-status { margin-top: 4px; }
-.otf-caption { margin: 12px 0 2px; font-size: 0.9rem; text-align: center; }
 .otf-status:empty { display: none; }
 /* Task map, styled like the paper's t-SNE figure (serif labels, paper palette). */
 .otf-map-frame { position: relative; margin-top: 10px; }
@@ -60,8 +105,11 @@ main#main .otf-model-name { margin: 0 0 4px; font-family: var(--font-serif); fon
 }
 .otf-tip[hidden] { display: none; }
 .otf-legend {
-  display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 16px; margin-top: 12px;
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 16px;
   font-family: var(--font-serif); font-size: 1rem;
 }
 .otf-legend-item { display: inline-flex; align-items: center; gap: 6px; cursor: default; }
-.otf-legend-item::before { content: ""; width: 11px; height: 11px; border-radius: 50%; background: var(--c); opacity: 0.5; }
+.otf-legend-item::before {
+  content: ""; box-sizing: border-box; width: 11px; height: 11px; border-radius: 50%;
+  border: 1.25px solid var(--c); background: color-mix(in srgb, var(--c) 30%, transparent);
+}

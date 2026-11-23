@@ -40,6 +40,7 @@ body { margin: 0; }
   --font-size-body: 17px;
   --affiliation-logo-height: 34px;
   --section-title-align: flex-start;  /* flex-start | center */
+  --prose-text-align: left;           /* left | justify: paragraphs, lists, takeaway cards, callouts */
   --font-size-body-mobile: 16px;
 
   --content-width: 900px;
@@ -229,6 +230,7 @@ main#main h4 {
   max-width: var(--prose-width); margin: 0 auto;
 }
 .prose p, .block-markdown p { margin: 0 0 16px; }
+.prose p, .block-markdown p, .prose li, .block-markdown li, .takeaway, .callout p { text-align: var(--prose-text-align); }
 .prose ul, .prose ol, .block-markdown ul, .block-markdown ol { max-width: var(--prose-width); margin: 0 auto 16px; padding-left: 1.4em; }
 
 .block-unsupported {
@@ -246,7 +248,21 @@ figure img { max-width: 100%; border-radius: var(--radius); }
 figure img.figure-dark { display: none; }
 [data-theme="dark"] figure img.figure-light { display: none; }
 [data-theme="dark"] figure img.figure-dark { display: inline; }
+/* figure block `still`: an animation that plays once, then fades out and the still fades in.
+   Both images share one grid cell, so the figure keeps its size throughout. */
+.figure-stage { display: grid; }
+.figure-stage > img { grid-area: 1 / 1; width: 100%; height: auto; transition: opacity 0.5s ease; }
+.figure-stage .figure-anim { opacity: 0; }
+.figure-stage .figure-still { opacity: 1; transition-delay: 0.45s; }   /* in, once the animation is out */
+.figure-stage.is-waiting > img { opacity: 0; transition: none; }
+.figure-stage.is-playing .figure-anim { opacity: 1; transition: none; }
+.figure-stage.is-playing .figure-still { opacity: 0; transition: none; }
 figcaption { font-size: 0.88rem; color: var(--color-text-muted); margin-top: 8px; }
+/* Inline Markdown image (![alt](src)): emoji-sized, sits on the text line. */
+img.inline-icon { height: 1.35em; width: auto; vertical-align: -0.3em; border-radius: 0; }
+/* Inline maths ($...$, typeset by KaTeX): KaTeX's default 1.21em is tuned for serif body text
+   and reads too large beside the sans-serif used here. */
+.katex { font-size: 1.1em; }
 
 .fig-left, .fig-right { max-width: 45%; margin-bottom: 1em; }
 .fig-left { float: left; margin: 0.3em 24px 1em 0; }

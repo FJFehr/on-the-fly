@@ -34,38 +34,42 @@ parameter size, and what is achievable simply with standard training.
 |---|---|---|---|---|---|
 | B0 Hook | Examples in, a working model out. | Hero GIF; live demo | Hero + Demo | Opening widget | Exists (live JS demo; Plotly version in blog `widgets/`) |
 | B1 Problem | General models adapt from context. Specialists are small but need training. | Framing only | TL;DR, 1 sentence | Intro, 2 to 3 paragraphs + related work | None |
-| B2 Testbed | ARC-1D: 3 support pairs define a rule, predict the query. | Episode figure | Inline in "How it works" | Own short section | Demo task picker already shows episodes |
+| B2 Testbed | ARC-1D: 3 support pairs define a rule, predict the query. | Episode figure | Demo intro; the demo's first step shows an episode | Own short section | Demo task picker already shows episodes |
 | B3 = K1 | At a given parameter size, specialists reach accuracy that joint models do not, under standard training. | Capacity cliff figure | Results 1 | Experiment 1 | Slider over parameter count, individual vs joint |
-| B4 Method | Encoder reads examples into z. Decoder writes every weight. The model then runs alone. | GIF, 3-line description | "How it works" | Method section, with equations | Demo steps 1 to 3 |
+| B4 Method | Encoder reads examples into z. Decoder writes every weight. The model then runs alone. | GIF, 3-line description | Hero GIF and its caption | Method section, with equations | Demo steps 1 to 3 |
 | B5 = K2a | Generated models recover specialist accuracy. | Per-task bars | Results 2 | Experiment 2 | Toggle with/without task ID per task |
 | B6 = K2b | The latent z is organised by task; related tasks sit close. | t-SNE of z (100% / 60.9% probe) | Results 2 | Experiment 2 | Demo map already does this |
 | B7 Insight (blog) | All generated models lie in an 8-dim slice of weight space. z captures the rule, not the colours. | `demo/README.md` section 4 measurements | Skip | "What did the hypernetwork learn?" | Colour-swap in the demo moves the star very little |
-| B8 = K3a | Generate once, execute many. | LOO figure | Results 3, rung 1 | Experiment 3 | None needed |
-| B9 = K3b | Partial compositional generalisation. | Fill ∘ Mirror example; table | Results 3, rung 2 | Experiment 3 | Pick a composition in the demo (later) |
-| B10 = K3c | Unseen transformations; the task ID trade-off. Link to ARC: tiny ARC models rely on task IDs and heavy augmentation; inferring the task from examples is one way round the task-ID part. | Table | Results 3, rung 3 | Experiment 3 | Task ID on/off toggle on the table |
-| B11 Did not work | Hypothesis: parameter sharing in the hypernetwork would need less training data. Result: no gain over individual models, at least at this scale and with this training. Secondary: exact match on compositions stays about 1%; tiny models only. | Appendix "Data Efficiency" | 1 to 2 lines under Conclusion | Full section (the track asks for "ideas that did not work out") | Data-efficiency curve |
-| B12 Outlook | From task identification to model construction; local specialists; ARC-AGI and LoRA-scale generation. | Discussion | Conclusion, 3 bullets | Closing section | None |
-| B13 Practical findings | (a) Canon layers improve exact match in every setting, most at low capacity. A short 1D convolution mixes neighbouring tokens everywhere, the right inductive bias for small 1D sequence tasks. Canon was proposed for multi-hop reasoning in larger language models; this is a good use case at tiny scale. (b) Muon matches or beats AdamW in every direct-training setting. Caveat: the AdamW learning rate was not tuned there; in the tuned hypernetwork search Muon has the best test exact match (66.7 ± 11.0 vs 60.0 ± 0.9) but AdamW the lower validation loss. | Appendix ablations (Canon, optimiser, hyperparameter search) | One line in "How it works" (optional) | Own section | Canon on/off toggle on the capacity plot |
+| B8 = K3a | Generate once, execute many. | LOO figure | Results 2 | Experiment 3 | None needed |
+| B9 = K3b | Partial compositional generalisation. | Fill ∘ Mirror example; table | Results 3 | Experiment 3 | Pick a composition in the demo (later) |
+| B10 = K3c | Unseen transformations; the task ID trade-off. Link to ARC: tiny ARC models rely on task IDs and heavy augmentation; inferring the task from examples is one way round the task-ID part. | Table | Results 3 | Experiment 3 | Task ID on/off toggle on the table |
+| B11 Did not work | Hypothesis: parameter sharing in the hypernetwork would need less training data. Result: no gain over individual models, at least at this scale and with this training. Secondary: exact match on compositions stays about 1%; tiny models only. | Appendix "Data Efficiency" | Limitations, in Discussion | Full section (the track asks for "ideas that did not work out") | Data-efficiency curve |
+| B12 Outlook | From task identification to model construction; local specialists; ARC-AGI and LoRA-scale generation. | Discussion | Outlook, in Discussion | Closing section | None |
+| B13 Practical findings | (a) Canon layers improve exact match in every setting, most at low capacity. A short 1D convolution mixes neighbouring tokens everywhere, the right inductive bias for small 1D sequence tasks. Canon was proposed for multi-hop reasoning in larger language models; this is a good use case at tiny scale. (b) Muon matches or beats AdamW in every direct-training setting. Caveat: the AdamW learning rate was not tuned there; in the tuned hypernetwork search Muon has the best test exact match (66.7 ± 11.0 vs 60.0 ± 0.9) but AdamW the lower validation loss. | Appendix ablations (Canon, optimiser, hyperparameter search) | Practical findings, in Discussion | Own section | Canon on/off toggle on the capacity plot |
 
 ---
 
-## Project page order (target for today)
+## Project page order
 
-1. **Hero**: title, venue, buttons.
-2. **TL;DR** (B1 + thesis, 2 to 3 sentences) and **hero GIF** (B0, B4).
-3. **Key takeaways**: three cards, K1 to K3, each linking to its results block.
-4. **How it works** (B4 + B2): 3 lines plus the ARC-1D episode figure.
-5. **Try it in your browser** (B0): the demo. Placed early because it is the hook.
-6. **Results**, one block per message:
-   - 6a. K1, specialisation needs less capacity (B3).
-   - 6b. K2, generating specialists (B5, B6).
-   - 6c. K3, how far they generalise: a ladder of reuse, then composition, then unseen (B8 to B10).
-7. **Conclusion and outlook** (B12), plus a short limitations note (B11).
-8. **Cite**.
+This is the order `project.yaml` now implements.
 
-Changes from the current `project.yaml`: merge Method and Data into "How it works";
-move Demo up, before Results; group three results blocks under K1 to K3; rename
-"Going Beyond" to "Conclusion" and shorten it.
+1. **Overview**: hero (title, venue, buttons), a two-sentence **TL;DR** (B1 + thesis),
+   the **hero GIF** (B0, B4), and three **takeaway cards**, K1 to K3, each with its
+   headline number and a link to its results block.
+2. **Motivation and demo** (B1, B2, B0): one paragraph placing the work among tiny
+   ARC-AGI models (HRM, TRM, URM, CompressARC) and their reliance on puzzle IDs, then
+   a short note on ARC-1D with an episode figure, which gives the demo its context,
+   then the demo. There is no separate Method section.
+3. **Results**, one block per message:
+   - 3a. K1, specialisation needs less capacity (B3).
+   - 3b. K2, generating specialists that run alone and can be reused (B5, B8, B6).
+   - 3c. K3, the task ID trade-off on compositions and unseen transformations (B9, B10).
+4. **Discussion**: practical findings (B13), limitations (B11), then outlook (B12).
+5. **Cite**.
+
+Reuse ("generate once, execute many", B8) sits under K2 on the page, not K3 as in the
+paper: it shows the generated model is standalone, and leaves K3 to be only about
+functions outside training.
 
 ## Blog post order (ICLR 2027 Blogposts, due 1 Dec 2026)
 

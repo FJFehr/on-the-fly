@@ -42,6 +42,8 @@
 <!-- meta:end -->
 
 <link rel="stylesheet" href="template/css/style.css">
+<!-- KaTeX (vendored, MIT): typesets $...$ in content as LaTeX maths, see template/js/markdown.js -->
+<link rel="stylesheet" href="template/vendor/katex/katex.min.css">
 
 <!-- Engine scripts, in dependency order -->
 <script src="template/js/palettes.js"></script>
@@ -131,6 +133,7 @@
      loaded in <head> already (palettes.js/theme.js needed pre-paint; yaml-lite.js
      is needed before render.js runs but has no pre-paint role). -->
 <script src="template/js/yaml-lite.js"></script>
+<script src="template/vendor/katex/katex.min.js"></script>
 <script src="template/js/markdown.js"></script>
 <script src="template/js/tables.js"></script>
 <script src="template/js/results-table.js"></script>

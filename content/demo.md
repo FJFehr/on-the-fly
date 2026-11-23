@@ -1,2 +1,3 @@
-Both trained hypernetworks run live in your browser. Pick a task, generate a model
-from its three examples, then run it on new inputs.
+**Everything runs live in your browser** (How cool?!). Give the hypernetwork a few
+custom examples of a task, and it generates a task-specific model. The result
+is a reusable model, specialised to your examples.

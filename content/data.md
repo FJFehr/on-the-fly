@@ -1,13 +1,9 @@
-### Data: ARC-1D
-
-[ARC-1D](https://github.com/khalil-research/1D-ARC) is a one-dimensional
-variant of ARC-AGI. Inputs and outputs are sequences of coloured cells, and
-each transformation involves concepts such as objects, counting and spatial
-relations. Each episode gives three support pairs that define the
-transformation, plus one query input whose output must be predicted.
-
-We use 14 of the 18 transformation categories, keeping those a standalone
-model can execute without seeing the support set again. Each category has 50
-episodes, split 40 / 5 / 5 into train, validation and test. Colour remapping
-and sequence shifts give 561K augmented training episodes. We report
-exact-match accuracy: the whole predicted sequence must be correct.
+**Data.** [ARC-1D](https://github.com/khalil-research/1D-ARC) is a one-dimensional
+variant of [ARC-AGI](https://arcprize.org/arc-agi): a task combining abstract
+reasoning and sequence modelling, in which a transformation must be inferred
+from a few examples. An **episode** comprises a support set of three
+input–output pairs and a query, all sharing one transformation. We use the 14
+of its 18 transformations that a standalone model can execute without the
+examples. Each training episode is augmented 1,000 times by remapping colours
+and shifting sequences, giving a total of 561K episodes across 14
+transformations.

@@ -1,7 +1,7 @@
 # The in-browser demo: how it works
 
-This folder holds the live demo on the project page (section **"Try It in Your
-Browser"**). The page runs two trained hypernetworks from the paper live in the
+This folder holds the live demo on the project page (section **"Generate Models in
+Your Browser"**). The page runs two trained hypernetworks from the paper live in the
 visitor's browser. There is no server, no GPU and no library.
 
 This file explains what the demo does, how we know it is correct, and what to check
@@ -102,7 +102,7 @@ The map copies the paper's figure (`visualisation/paper/plot_embedding_clusters.
 - t-SNE settings: perplexity 30, PCA initialisation, `random_state=0`. Each model gets its
   own map.
 - Task labels and colours come from that script's `build_display_categories`, so they
-  match the paper exactly. Dots are larger than in the paper and more see-through (alpha 0.4); labels use the serif font.
+  match the paper exactly. Dots are larger than in the paper and styled like the example cells: a full-colour edge and a see-through fill. Labels use the serif font.
 - Light grid, left and bottom axes only, and one shared legend below both maps.
 
 Hover over a dot, or over a task name in the legend, to name and highlight that task. The
