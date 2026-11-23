@@ -1,7 +1,4 @@
-The generated weights are also organised by transformation. With a task ID,
-transformations are perfectly separated (100% linear-probe accuracy). Without
-it, structure still emerges from the support examples alone (60.9%). The
-overlap is among related transformations: the *Move* variants overlap with one
-another, as do the *Pattern Copy* variants. Related functions occupy nearby
-regions of weight space. The two maps in the [demo](#demo) show this
-structure for both models.
+The generated weights are themselves organised by transformation. A task ID
+separates them fully, whereas examples alone give a natural structure in which
+related functions overlap, notably the *Move* variants, which are also those
+that lose the most accuracy. The [demo](#demo) concurs with this.

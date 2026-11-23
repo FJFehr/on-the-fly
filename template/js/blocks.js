@@ -123,6 +123,8 @@
       // Optional width (any CSS length, e.g. "60%") for small plots that
       // would otherwise stretch to the full prose width.
       if (block.width) figure.style.maxWidth = block.width;
+      // Optional space above and below (any CSS length); the default is 24px.
+      if (block.margin) figure.style.marginBlock = block.margin;
       if (block.still) {
         // Optional `still` (+ `still_dark`, `play_ms`): `src` is an animation that plays
         // once and then gives way to the still.

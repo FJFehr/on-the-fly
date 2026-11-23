@@ -4,8 +4,7 @@ several widths, from 1.4K to 5.4K parameters, in two ways: as *individual
 models*, one per transformation, and as a *joint model* covering the whole
 task set. Every model maps one input to its output, without support examples;
 the joint model may also receive a *task ID*, a learned embedding which
-identifies the transformation to apply, playing the role of HRM's `puzzle_id`
-in ARC-AGI. Both variants use
+identifies the transformation to apply (analogous to HRM's `puzzle_id`
+in ARC-AGI). Both variants use
 [RoPE](https://doi.org/10.1016/j.neucom.2023.127063),
-[Canon layers](#ablation-canon) and the [Muon optimiser](#ablation-muon), the
-last two examined in the discussion.
+[Canon layers](#ablation-canon) and the [Muon optimiser](#ablation-muon), which we ablate.

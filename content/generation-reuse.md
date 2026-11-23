@@ -1,5 +1,6 @@
-**Generate once, execute many.** For each transformation, we generate a model
-from one support set, freeze it, and run it on every other query of that
-transformation, with no further context or training. Accuracy stays close to
-that on the paired query, with or without task IDs. A generated specialist can
-be built once and reused.
+With a task ID, the generated models largely match the individual ones.
+Without it, they fall behind. The weights nonetheless capture the function
+rather than the episode: generated from one support set and then frozen, a
+model retains its accuracy on other queries of the same transformation (see
+*generate once, execute many* in the
+[paper](https://arxiv.org/abs/2610.00820)).

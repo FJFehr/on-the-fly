@@ -43,9 +43,9 @@ parameter size, and what is achievable simply with standard training.
 | B8 = K3a | Generate once, execute many. | LOO figure | Results 2 | Experiment 3 | None needed |
 | B9 = K3b | Partial compositional generalisation. | Fill ∘ Mirror example; table | Results 3 | Experiment 3 | Pick a composition in the demo (later) |
 | B10 = K3c | Unseen transformations; the task ID trade-off. Link to ARC: tiny ARC models rely on task IDs and heavy augmentation; inferring the task from examples is one way round the task-ID part. | Table | Results 3 | Experiment 3 | Task ID on/off toggle on the table |
-| B11 Did not work | Hypothesis: parameter sharing in the hypernetwork would need less training data. Result: no gain over individual models, at least at this scale and with this training. Secondary: exact match on compositions stays about 1%; tiny models only. | Appendix "Data Efficiency" | Limitations, in Discussion | Full section (the track asks for "ideas that did not work out") | Data-efficiency curve |
+| B11 Did not work | Hypothesis: parameter sharing in the hypernetwork would need less training data. Result: no gain over individual models, at least at this scale and with this training. Secondary: exact match on compositions stays about 1%; tiny models only. | Appendix "Data Efficiency" | One paragraph in Discussion, before the two directions | Full section (the track asks for "ideas that did not work out") | Data-efficiency curve |
 | B12 Outlook | From task identification to model construction; local specialists; ARC-AGI and LoRA-scale generation. | Discussion | Outlook, in Discussion | Closing section | None |
-| B13 Practical findings | (a) Canon layers improve exact match in every setting, most at low capacity. A short 1D convolution mixes neighbouring tokens everywhere, the right inductive bias for small 1D sequence tasks. Canon was proposed for multi-hop reasoning in larger language models; this is a good use case at tiny scale. (b) Muon matches or beats AdamW in every direct-training setting. Caveat: the AdamW learning rate was not tuned there; in the tuned hypernetwork search Muon has the best test exact match (66.7 ± 11.0 vs 60.0 ± 0.9) but AdamW the lower validation loss. | Appendix ablations (Canon, optimiser, hyperparameter search) | Practical findings, in Discussion | Own section | Canon on/off toggle on the capacity plot |
+| B13 Practical findings | (a) Canon layers improve exact match in every setting, most at low capacity. A short 1D convolution mixes neighbouring tokens everywhere, the right inductive bias for small 1D sequence tasks. Canon was proposed for multi-hop reasoning in larger language models; this is a good use case at tiny scale. (b) Muon matches or beats AdamW in every direct-training setting. Caveat: the AdamW learning rate was not tuned there; in the tuned hypernetwork search Muon has the best test exact match (66.7 ± 11.0 vs 60.0 ± 0.9) but AdamW the lower validation loss. | Appendix ablations (Canon, optimiser, hyperparameter search) | Additional Analysis, before Discussion | Own section | Canon on/off toggle on the capacity plot |
 
 ---
 
@@ -64,8 +64,10 @@ This is the order `project.yaml` now implements.
    - 3a. K1, specialisation needs less capacity (B3).
    - 3b. K2, generating specialists that run alone and can be reused (B5, B8, B6).
    - 3c. K3, the task ID trade-off on compositions and unseen transformations (B9, B10).
-4. **Discussion**: practical findings (B13), limitations (B11), then outlook (B12).
-5. **Cite**.
+4. **Additional analysis**: practical findings (B13), the Canon and Muon ablations.
+5. **Discussion**: outlook as a call to action (B12), with the open problems (B11) in one
+   short paragraph before the two directions. There is no separate Limitations block.
+6. **Cite**.
 
 Reuse ("generate once, execute many", B8) sits under K2 on the page, not K3 as in the
 paper: it shows the generated model is standalone, and leaves K3 to be only about

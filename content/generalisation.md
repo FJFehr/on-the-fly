@@ -1,2 +1,5 @@
-Can the hypernetwork generate models for functions it was never trained on? We
-test two settings.
+So far, every transformation was seen during training. Can the hypernetwork
+generate models for functions it has never encountered? We test two settings.
+For **compositional generalisation**, we define 10 compositions of known
+transformations, such as *Fill* ∘ *Mirror*: each part is familiar, but their
+combination is new.

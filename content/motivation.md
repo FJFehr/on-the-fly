@@ -16,4 +16,4 @@ infers the task from the examples and generates the weights of a compact model
 that executes independently. Similarly,
 [Text-to-LoRA](https://openreview.net/forum?id=zWskCdu3QA) generates adapters
 from textual descriptions; but here our result is standalone, reusable and small
-enough to run locally. Task inference thereby becomes model construction.
+enough to run locally. Task inference thereby becomes model weight generation.

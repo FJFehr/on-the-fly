@@ -70,7 +70,7 @@ sections:
         still_dark: assets/figures/hypernetworks-full-dark.png
         play_ms: 19900
         alt: "The hypernetwork encodes the three example pairs into a task vector, decodes it into the weights of a small Transformer, and that Transformer predicts the output for a new input."
-        caption: '**Few-shot weight generation.** An encoder $\phi_\omega$ reads the three support set examples $Z_{\mathcal E}$ and summarises the task as a vector $z_{\mathcal E}$. A decoder $\psi_\rho$ turns $z_{\mathcal E}$ into every weight $w_{\mathcal E}$ of a small Transformer $f(\cdot;w_{\mathcal E})$. Once generated, $f$ is decoupled and needs no examples: given an unseen query input $x^\prime$, it predicts the output $\hat y^\prime$.'
+        caption: 'An encoder $\phi_\omega$ reads the three support set examples $Z_{\mathcal E}$ and summarises the task as a vector $z_{\mathcal E}$. A decoder $\psi_\rho$ turns $z_{\mathcal E}$ into every weight $w_{\mathcal E}$ of a small Transformer $f(\cdot;w_{\mathcal E})$. Once generated, $f$ is decoupled and needs no examples: given an unseen query input $x^\prime$, it predicts the output $\hat y^\prime$.'
         position: center
       - type: takeaways
         title: Key Findings
@@ -133,16 +133,15 @@ sections:
       - type: figure
         src: assets/figures/hypernet-per-task.png
         alt: "Bar chart of per-transformation exact-match accuracy for individually trained models and hypernetwork-generated models with and without task IDs. Generated models are close to individual models on most transformations."
-        caption: "**Generated models recover specialist performance.** Per-task validation exact-match accuracy for individually trained and hypernetwork-generated models, with and without task IDs, using the 1.4K-parameter target model. Error bars show ±1 s.d. across 5 seeds."
+        caption: "**Generated models recover specialist performance.** Per-transformation exact-match validation accuracy at 1.4K parameters. Error bars show ±1 s.d. across 5 seeds."
         position: center
       - type: markdown
         source: content/generation-reuse.md
       - type: figure
-        src: assets/figures/generalisation-loo.png
-        alt: "Bar chart of average exact-match accuracy with and without task ID, on the query paired with the generating support set and on queries from other episodes of the same transformation. The two bars are close in both cases."
-        caption: "**Generated specialists generalise across episodes.** Exact-match accuracy on the query paired with the generating support set (same-instance) and on queries from other episodes of the same transformation (cross-instance). Bars show the macro-average over 14 transformations with ±1 s.d."
+        src: assets/figures/weight-space-tsne.png
+        alt: "Two t-SNE maps of generated models, coloured by transformation. With a task ID each transformation forms its own cluster. Without it, clusters remain but related transformations such as the Move variants overlap."
+        caption: "**Generated weights form a task-structured space.** t-SNE of the task representations from which the weights are generated, coloured by transformation. *Task ID*: transformations are fully separable (100% linear-probe accuracy). *w/o Task ID*: structure emerges from the support examples alone (60.9%)."
         position: center
-        width: 45%
       - type: markdown
         source: content/generation-space.md
 
@@ -152,23 +151,23 @@ sections:
     blocks:
       - type: markdown
         source: content/generalisation.md
-      - type: markdown
-        source: content/generalisation-comp.md
       - type: figure
         src: assets/figures/arc1d-comp-fill-mirror.png
         alt: "An ARC-1D episode for the held-out composition Fill after Mirror: three input and output example pairs and a query input whose output must be predicted."
-        caption: "**Fill ∘ Mirror: an example held-out composition.** The support pairs specify Mirror followed by Fill. Both transformations are seen on their own during training, but their composition is held out."
+        caption: "**Fill ∘ Mirror: an example held-out composition.** The support pairs specify *Mirror* followed by *Fill*."
         position: center
+        margin: 48px
       - type: markdown
         source: content/generalisation-unseen.md
       - type: table
         source: content/generalisation-table.md
         caption: "**Task-ID conditioning improves in-distribution specialisation but hinders generalisation.** Mean ± s.d. over 5 seeds; parentheses show the change from removing the task ID."
+      - type: markdown
+        source: content/generalisation-discussion.md
 
-  - id: discussion
-    title: Taking This Research Further
-    nav_title: Discussion
-    nav: true
+  - id: ablations
+    title: Additional Analysis
+    nav: false
     blocks:
       - type: markdown
         source: content/findings.md
@@ -177,13 +176,17 @@ sections:
           - id: ablation-canon
             src: assets/figures/ablation-canon.png
             alt: "Exact-match accuracy against parameter count with and without Canon layers, for individual models and joint models with and without task ID. Canon layers improve every setting, most at low capacity."
-            caption: "**The inductive bias of Canon layers suits this task.** They help in every setting, most at low capacity, and [Canon layers](https://openreview.net/forum?id=kxv0M6I7Ud) have been shown to help reasoning more generally. Solid: with Canon layers. Dashed: without. Bands show ±1 s.d. across 5 seeds."
+            caption: "**The inductive bias of Canon layers is helpful for these tasks, especially when capacity is limited.**"
           - id: ablation-muon
             src: assets/figures/ablation-muon.png
             alt: "Exact-match accuracy against parameter count with Muon and with AdamW, for individual models and joint models with and without task ID. Muon matches or exceeds AdamW in every setting."
-            caption: "**Muon can give better results, but is harder to tune.** [Muon](https://arxiv.org/abs/2502.16982) matches or beats AdamW in every setting, but adds a second learning rate and varied more across seeds in our hypernetwork search. The AdamW learning rate was not tuned separately here. Solid: Muon. Dashed: AdamW. Bands show ±1 s.d. across 5 seeds."
-      - type: markdown
-        source: content/limits.md
+            caption: "**Muon matches or exceeds AdamW.**"
+
+  - id: discussion
+    title: A Future Where Models Generate Models
+    nav_title: Future
+    nav: true
+    blocks:
       - type: markdown
         source: content/going-beyond.md
 
