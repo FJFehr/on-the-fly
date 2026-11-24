@@ -41,10 +41,12 @@ body { margin: 0; }
   --affiliation-logo-height: 34px;
   --section-title-align: flex-start;  /* flex-start | center */
   --prose-text-align: left;           /* left | justify: paragraphs, lists, takeaway cards, callouts */
+  --prose-hyphens: manual;            /* manual | auto: auto closes the word gaps of justified text */
   --font-size-body-mobile: 16px;
 
   --content-width: 900px;
   --prose-width: 700px;
+  --page-gutter: 24px;                /* space left and right of the content; narrower on phones */
   --radius: 10px;
   --radius-pill: 999px;
 }
@@ -94,7 +96,7 @@ a:hover, a:focus-visible { color: var(--color-link-hover); }
 .wrap {
   max-width: var(--content-width);
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 var(--page-gutter);
   display: flow-root; /* contains floated figures */
 }
 
@@ -109,7 +111,7 @@ a:hover, a:focus-visible { color: var(--color-link-hover); }
   border-bottom: 1px solid var(--color-border);
 }
 .nav-inner {
-  max-width: var(--content-width); margin: 0 auto; padding: 14px 24px;
+  max-width: var(--content-width); margin: 0 auto; padding: 14px var(--page-gutter);
   display: flex; align-items: center; justify-content: space-between; gap: 16px;
 }
 .wordmark {
@@ -230,7 +232,10 @@ main#main h4 {
   max-width: var(--prose-width); margin: 0 auto;
 }
 .prose p, .block-markdown p { margin: 0 0 16px; }
-.prose p, .block-markdown p, .prose li, .block-markdown li, .takeaway, .callout p { text-align: var(--prose-text-align); }
+.prose p, .block-markdown p, .prose li, .block-markdown li, .takeaway, .callout p {
+  text-align: var(--prose-text-align);
+  -webkit-hyphens: var(--prose-hyphens); hyphens: var(--prose-hyphens);
+}
 .prose ul, .prose ol, .block-markdown ul, .block-markdown ol { max-width: var(--prose-width); margin: 0 auto 16px; padding-left: 1.4em; }
 
 .block-unsupported {
@@ -242,7 +247,8 @@ main#main h4 {
 /* ----------------------------------------------------------------------
    FIGURES
    ---------------------------------------------------------------------- */
-figure { max-width: var(--prose-width); margin: 24px auto; text-align: center; }
+/* --figure-width: a figure block's optional `width`, set by blocks.js. */
+figure { max-width: var(--figure-width, var(--prose-width)); margin: 24px auto; text-align: center; }
 figure img { max-width: 100%; border-radius: var(--radius); }
 /* figure block src_dark: show only the variant matching the active theme */
 figure img.figure-dark { display: none; }
@@ -264,7 +270,7 @@ img.inline-icon { height: 1.35em; width: auto; vertical-align: -0.3em; border-ra
    and reads too large beside the sans-serif used here. */
 .katex { font-size: 1.1em; }
 
-.fig-left, .fig-right { max-width: 45%; margin-bottom: 1em; }
+.fig-left, .fig-right { max-width: var(--figure-width, 45%); margin-bottom: 1em; }
 .fig-left { float: left; margin: 0.3em 24px 1em 0; }
 .fig-right { float: right; margin: 0.3em 0 1em 24px; }
 
@@ -313,9 +319,26 @@ img.inline-icon { height: 1.35em; width: auto; vertical-align: -0.3em; border-ra
 .figure-row figure { flex: 1 1 0; min-width: 0; margin: 0; }
 
 @media (max-width: 600px) {
-  .figure-row { flex-direction: column; }
-  .md-table td:nth-child(3), .md-table th:nth-child(3) { display: none; }
-  .md-table td, .md-table thead th { padding: 8px 10px; font-size: 0.85rem; }
+  /* Phones: figures take almost the full screen width whatever their `width`, leaving 8px at
+     each edge; captions stay in line with the text. A figure row stays side by side. */
+  figure { max-width: none; margin-inline: calc(8px - var(--page-gutter)); }
+  figcaption { padding-inline: calc(var(--page-gutter) - 8px); }
+  /* A play-once figure's caption fades in after the animation (blocks.js); its space is kept. */
+  figcaption { transition: opacity 0.5s ease 0.45s; }
+  .caption-held figcaption { opacity: 0; }
+  .figure-row { gap: 12px; }
+  .figure-row figcaption { padding-inline: 0; font-size: 0.8rem; }
+  /* Tables also run edge to edge and shrink to fit instead of scrolling; a signed delta drops
+     to its own line. */
+  .table-scroll { margin-inline: calc(-1 * var(--page-gutter)); border-inline: none; border-radius: 0; }
+  .md-table { min-width: 0; table-layout: auto; }
+  /* Text scales down with the screen below about 390px, so narrow phones still fit every column. */
+  .md-table td, .md-table thead th, .md-table caption { padding: 6px 4px; font-size: min(0.75rem, 3.1vw); }
+  /* Headers: top-aligned, and small enough to stay on two balanced lines down to 320px. */
+  .md-table thead th { font-size: min(0.7rem, 2.6vw); vertical-align: top; text-wrap: balance; }
+  .md-table-key { white-space: nowrap; }
+  .md-table td:first-child, .md-table th:first-child, .md-table caption { padding-left: 8px; }
+  .md-table .delta-pos, .md-table .delta-neg { display: block; }
   .fig-left, .fig-right { float: none; max-width: var(--prose-width); margin: 0.3em auto 1em; text-align: center; }
 }
 
@@ -336,6 +359,8 @@ a.takeaway:hover, a.takeaway:focus-visible { background: var(--green-light); bor
 /* The bold lead-in is coloured but stays in the card's body font (unlike
    the TL;DR's serif) -- same as when-rubrics-fail / legal-reward-bench. */
 .takeaway strong { color: var(--green-text); }
+/* A card without body text is a short heading: never justified or hyphenated. */
+.takeaway-title-only { text-align: start; -webkit-hyphens: manual; hyphens: manual; text-wrap: balance; }
 
 /* ----------------------------------------------------------------------
    CALLOUT
@@ -391,7 +416,23 @@ a.takeaway:hover, a.takeaway:focus-visible { background: var(--green-light); bor
   .nav-inner { flex-wrap: wrap; row-gap: 10px; justify-content: center; }
   #site-nav { gap: 14px; justify-content: center; }
 }
+@media (max-width: 600px) {
+  /* One-row header: the wordmark shows its logo only (the text stays for screen readers). */
+  .nav-inner { flex-wrap: nowrap; justify-content: space-between; gap: 8px; padding-block: 8px; }
+  .wordmark { flex-shrink: 0; }
+  .wordmark:has(.wordmark-logo) { font-size: 0; }
+  .wordmark-logo { height: 26px; }
+  /* Links and gaps scale down with the screen; if they still cannot fit, the links wrap
+     inside the nav, so the page never scrolls sideways. */
+  #site-nav { min-width: 0; justify-content: flex-end; gap: 4px min(12px, 2.6vw); }
+  #site-nav a { font-size: min(0.85rem, 3.6vw); }
+  #theme-toggle { width: 30px; height: 30px; }
+  /* BibTeX wraps instead of scrolling; the copy button still copies the source text. */
+  #bibtex-block { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 0.75rem; padding: 12px; }
+}
 @media (max-width: 480px) {
+  :root { --page-gutter: 16px; }
+  .callout-tldr { padding: 16px; }
   body { font-size: var(--font-size-body-mobile); }
   .hero { padding-top: 32px; }
   .hero-pills { gap: 8px; }

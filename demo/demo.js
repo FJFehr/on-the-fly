@@ -123,7 +123,7 @@
   // position of its k nearest episodes in z: t-SNE cannot add a point to a finished map.
   function taskMap(canvas, tip, map, categories) {
     const K = 10, PAD = 14, EDGE = 1.25, FILL = 0.3;  // edge width; opacity of a dot's fill
-    let marker = null, from = null, start = 0, hover = -1;
+    let marker = null, from = null, start = 0, hover = -1, fade = false;
     const css = function (name) { return getComputedStyle(canvas).getPropertyValue(name).trim(); };
     // Dot radius scales with the canvas; dots are inset from the axes so none cross them.
     const radius = function (size) { return Math.max(3, size * 0.018); };
@@ -141,11 +141,14 @@
       ctx.closePath();
     }
 
-    function draw(now) {
-      const size = canvas.clientWidth, ratio = window.devicePixelRatio || 1;
-      if (!size) return;
-      canvas.width = canvas.height = size * ratio;
-      const ctx = canvas.getContext("2d");
+    // The grid, axes and dots change only with the size, the highlighted task and the theme, so
+    // they are painted into `scene` once and copied per frame: the star's animation then costs a
+    // copy and one star, not 1,400 dots. `scene` and `layer` are reused, never recreated.
+    const scene = document.createElement("canvas"), layer = document.createElement("canvas");
+    let sceneKey = "";
+    function paintScene(size, ratio) {
+      scene.width = scene.height = layer.width = layer.height = size * ratio;
+      const ctx = scene.getContext("2d");
       ctx.scale(ratio, ratio);
       // Grid (alpha 0.25) and the left/bottom axes, as in the paper figure.
       ctx.strokeStyle = css("--color-text");
@@ -162,8 +165,6 @@
       // see-through fills would turn opaque. While a task is highlighted, the others are grey
       // and the highlighted task is drawn last.
       const r = radius(size), grey = css("--color-border");
-      const layer = document.createElement("canvas");
-      layer.width = layer.height = size * ratio;
       const lctx = layer.getContext("2d");
       lctx.scale(ratio, ratio);
       lctx.lineWidth = EDGE;
@@ -186,14 +187,26 @@
         ctx.drawImage(layer, 0, 0);
         ctx.restore();
       });
+    }
+
+    function draw(now) {
+      const size = canvas.clientWidth, ratio = window.devicePixelRatio || 1;
+      if (!size) return;
+      const key = [size, ratio, hover, css("--color-text"), css("--color-border")].join("|");
+      if (key !== sceneKey) { paintScene(size, ratio); sceneKey = key; }
+      canvas.width = canvas.height = size * ratio;  // also clears the canvas
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(scene, 0, 0);
       if (!marker) return;
+      ctx.scale(ratio, ratio);
       const t = Math.min(1, (now - start) / 700), ease = 1 - Math.pow(1 - t, 3);
       const q = toPx([from[0] + (marker[0] - from[0]) * ease, from[1] + (marker[1] - from[1]) * ease], size);
       // See-through fill with a solid outline, so the dots under the star stay visible.
-      star(ctx, q[0], q[1], Math.max(13, r * 4));
+      star(ctx, q[0], q[1], Math.max(13, radius(size) * 4));
       ctx.fillStyle = ctx.strokeStyle = css("--color-text");
-      ctx.globalAlpha = 0.35; ctx.fill();
-      ctx.globalAlpha = 1; ctx.lineWidth = 1.5; ctx.lineJoin = "round";
+      const alpha = fade ? ease : 1;
+      ctx.globalAlpha = 0.35 * alpha; ctx.fill();
+      ctx.globalAlpha = alpha; ctx.lineWidth = 1.5; ctx.lineJoin = "round";
       ctx.stroke();
       if (t < 1) requestAnimationFrame(draw);
     }
@@ -208,7 +221,9 @@
         const w = 1 / (n[0] + 1e-6);
         wsum += w; x += w * map.xy[n[1]][0]; y += w * map.xy[n[1]][1];
       });
-      from = marker || [0.5, 0.5];
+      // A first star fades in where it lands; later ones travel there from the previous spot.
+      fade = !marker;
+      from = marker || [x / wsum, y / wsum];
       marker = [x / wsum, y / wsum];
       const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       start = reduce ? -Infinity : performance.now();
@@ -257,14 +272,73 @@
     return box;
   }
 
+  // The example figure and the demo read the same file: it is downloaded once per page.
+  const dataLoads = window.onTheFlyData = window.onTheFlyData || {};
+  function loadData(url) {
+    dataLoads[url] = dataLoads[url] || fetch(url).then(function (res) {
+      if (!res.ok) throw new Error(url + " responded " + res.status);
+      return res.json();
+    });
+    return dataLoads[url];
+  }
+
   window.renderOnTheFlyDemo = function (container, block) {
     container.classList.add("otf-demo");
-    return fetch(block.weights)
-      .then(function (res) {
-        if (!res.ok) throw new Error(block.weights + " responded " + res.status);
-        return res.json();
-      })
-      .then(function (data) { build(container, data); });
+    return loadData(block.weights).then(function (data) { build(container, data); });
+  };
+
+  // Example-episode figure (further `custom` blocks, in the Motivation and generalisation
+  // sections): the three example pairs and the query of one task, with a menu to look at any
+  // other task. Read-only, drawn with the demo's cells. `weights` is any file with a `presets`
+  // list: the demo's own (the 14 transformations) or compositions.json (the held-out
+  // compositions). Block keys: `task` is the category shown first; `menu_label` names the menu;
+  // in `caption`, {task} stands for the chosen preset's label and {first}, {second} for the
+  // parts of a composition in the order they are applied.
+  window.renderOnTheFlyEpisode = function (container, block) {
+    return loadData(block.weights).then(function (data) {
+      const figure = el("figure", "otf-demo otf-episode");
+      const box = el("div", "otf-step"), pairs = el("div"), caption = el("figcaption");
+      box.setAttribute("role", "img");
+      const select = el("select", "otf-select");
+      data.presets.forEach(function (p, i) {
+        const option = el("option", null, p.label);
+        option.value = String(i);
+        select.appendChild(option);
+      });
+      const menu = el("label", "otf-hint otf-presets", block.menu_label || "Transformation:");
+      menu.appendChild(select);
+
+      // One line of the figure: input row, arrow, output row.
+      const pair = function (x, y, index, yTex) {
+        const line = el("div", "otf-episode-pair");
+        const arrow = el("span", "otf-arrow", "→");
+        arrow.setAttribute("aria-hidden", "true");
+        line.append(labelled(index ? "x" : "x'", row(x), index), arrow, labelled(yTex || "y", row(y), index));
+        return line;
+      };
+      function show(i) {
+        const p = data.presets[i], query = p.queries[0].input;
+        pairs.replaceChildren();
+        for (let e = 0; e < 3; e++) pairs.appendChild(pair(p.support_inputs[e], p.support_outputs[e], e + 1));
+        // The query's output is what the model must predict: shown as unknown cells.
+        pairs.appendChild(pair(query, query.map(function () { return null; }), null, "\\hat{y}'"));
+        // Long sequences do not fit side by side: each output goes under its input.
+        pairs.classList.toggle("otf-stacked", query.length > 20);
+        box.setAttribute("aria-label", "An ARC-1D episode for " + p.label + ": three input and output example " +
+          "pairs and a query input whose output must be predicted.");
+        caption.innerHTML = mdInline(String(block.caption || "").replace(/\{(\w+)\}/g, function (_, key) {
+          return key === "task" ? p.label : p[key] || "";
+        }));
+      }
+      select.addEventListener("change", function () { show(Number(select.value)); });
+      const first = Math.max(0, data.presets.findIndex(function (p) { return p.category === block.task; }));
+      select.value = String(first);
+      show(first);
+
+      box.append(pairs, menu);
+      figure.append(box, caption);
+      container.appendChild(figure);
+    });
   };
 
   function build(container, data) {
@@ -284,21 +358,19 @@
       });
     };
 
-    // Each step is a title, the box holding its interactive parts, then a caption that says what
-    // the step showed and points to the next one.
+    // Each step is a title, the box holding its interactive parts, then an optional caption that
+    // says what the step showed and points to the next one.
     const step = function (title, caption) {
       const box = el("div", "otf-step");
-      container.append(el("h3", "otf-step-title", title), box, el("p", "otf-caption", caption));
+      container.append(el("h3", "otf-step-title", title), box);
+      if (caption) container.appendChild(el("p", "otf-caption", caption));
       return box;
     };
-    const support = step("1. Create your task",
-      "Three examples define the task. Repaint any cell to create your own, then generate your model.");
+    const support = step("1. Create your task");
     const generateStep = step("2. Generate your model",
       "Each dot is a model generated for a held-out example, and models of the same task cluster " +
       "together. The star is yours: run it below.");
-    const runStep = step("3. Run on new inputs",
-      "Your model runs alone: the examples and the hypernetwork are no longer needed. Switch " +
-      "inputs to reuse it.");
+    const runStep = step("3. Run on new inputs");
     const closing = el("p", "otf-caption otf-closing");
     closing.append(
       el("strong", null, "Now play with it!"),
@@ -308,10 +380,11 @@
       el("strong", null, "it cannot generalise beyond its labels."));
     container.appendChild(closing);
 
-    // Steps 1 and 3 share one layout, top to bottom: the graphic, the tools to edit it, the presets.
-    const tabs = presets("Task:", "Task");
-    const examples = el("div");
-    support.append(examples, tabs);
+    // The demo builds up as the visitor goes: step 1 starts with the task buttons alone, and the
+    // examples with their editing tools appear once a task is picked.
+    const tabs = presets("Pick a task:", "Task");
+    const examples = el("div", "otf-examples");
+    support.append(tabs, examples);
     const taskButtons = data.presets.map(function (p, i) {
       return tabs.appendChild(preset(p.label, function () { selectTask(i); }));
     });
@@ -336,7 +409,7 @@
         });
         examples.appendChild(pair);
       }
-      examples.appendChild(tools(state, "Repaint: pick a colour, then click cells.",
+      examples.appendChild(tools(state, "Customise your task: pick a colour, then click cells.",
         function () { renderSupport(); renderRun(); }, "Reset examples", state.examplesEdited,
         function () {
           state.support = copySupport(state.task);
@@ -347,9 +420,14 @@
     }
 
     // --- Step 2: both hypernetworks write a model --------------------------------
-    const genButton = el("button", "btn otf-primary", "Generate both models");
+    // Only the button shows (disabled until a task is picked). Generating reveals the two maps
+    // and their legend, and the stars follow a moment later.
+    const genButton = el("button", "btn otf-primary", "Generate models");
     genButton.type = "button";
+    genButton.disabled = true;
     const columns = el("div", "otf-columns");
+    columns.hidden = true;
+    let starTimer = null;
     // What each hypernetwork is given, under its name. The one with a task ID lets the visitor
     // choose which label it is told, so a wrong label can be tried against the same examples.
     let givenSelect = null;
@@ -357,7 +435,7 @@
       const col = el("div", "otf-column");
       const given = el("p", "otf-hint otf-given");
       if (model.usesTaskId) {
-        const label = el("label", null, "Examples and a task ID: ");
+        const label = el("label", null, "Examples and task ID");
         givenSelect = el("select", "otf-select");
         data.presets.forEach(function (p, i) {
           const option = el("option", null, p.label);
@@ -386,16 +464,25 @@
       columns.appendChild(col);
       return { map: taskMap(mapCanvas, tip, model.map, data.categories), nearest: nearest };
     });
-    generateStep.append(genButton, columns,
-                        legend(data.categories, panels.map(function (p) { return p.map; })));
+    const key = legend(data.categories, panels.map(function (p) { return p.map; }));
+    key.hidden = true;
+    generateStep.append(genButton, columns, key);
     function generate() {
-      state.weights = models.map(function (model, k) {
-        const z = model.m.encode(state.support[0], state.support[1], data.presets[state.given].task_index);
-        const c = panels[k].map.place(z);
-        panels[k].nearest.textContent = "Your model lands nearest to: " + data.categories[c].label;
-        return model.m.decode(z);
+      clearTimeout(starTimer);
+      const zs = models.map(function (model) {
+        return model.m.encode(state.support[0], state.support[1], data.presets[state.given].task_index);
       });
+      state.weights = models.map(function (model, k) { return model.m.decode(zs[k]); });
       renderRun();
+      const placeStars = function () {
+        panels.forEach(function (panel, k) {
+          panel.nearest.textContent = "Nearest task: " + data.categories[panel.map.place(zs[k])].label;
+        });
+      };
+      if (!columns.hidden) return placeStars();
+      columns.hidden = key.hidden = false;
+      panels.forEach(function (panel) { panel.map.clear(); });  // draw the maps now that they have a size
+      starTimer = setTimeout(placeStars, 600);
     }
     genButton.addEventListener("click", generate);
 
@@ -403,6 +490,7 @@
     function renderRun() {
       const p = state.task;
       runStep.replaceChildren();
+      if (!p) return runStep.appendChild(el("p", "otf-hint otf-note", "Pick a task in step 1 first."));
 
       runStep.appendChild(labelled("x'", row(state.input, {
         onCell: function (i) {
@@ -458,6 +546,10 @@
       state.given = i;
       if (givenSelect) givenSelect.value = String(i);
       taskButtons.forEach(function (b, j) { b.setAttribute("aria-pressed", String(i === j)); });
+      // Step 2 goes back to its button alone.
+      clearTimeout(starTimer);
+      genButton.disabled = false;
+      columns.hidden = key.hidden = true;
       panels.forEach(function (panel) {
         panel.map.clear();
         panel.nearest.textContent = "";
@@ -466,6 +558,6 @@
       setQuery(0);
     }
 
-    selectTask(Math.max(0, data.presets.findIndex(function (p) { return p.category === "flip"; })));
+    renderRun();  // no task yet: step 3 shows its hint
   }
 })();

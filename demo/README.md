@@ -12,20 +12,34 @@ before we show it to the world.
 ## 1. What the visitor sees
 
 1. **Pick a task**: any of the 14 trained tasks, named as in the paper's figures (Denoise,
-   Denoise MC, Fill, Flip, …). The page shows its three example pairs, x1→y1, x2→y2 and x3→y3.
+   Denoise MC, Fill, Flip, …). No task is preselected. Once one is picked, the page shows its
+   three example pairs, x1→y1, x2→y2 and x3→y3, and every cell can be repainted.
 2. **Generate.** Two hypernetworks read the same three examples:
    - **Without task ID:** it sees the examples only.
    - **With task ID:** it also gets the task's label, for example "Flip".
 
    Each one writes **all 1,204 weights** of a new small Transformer. "With task ID" is on
-   the left, "Without task ID" on the right. For each, the page shows:
-   - the 4-number **task vector z**,
+   the left, "Without task ID" on the right. Until the visitor generates, only the button
+   shows. Then, for each model, the page shows:
    - where the new model lands, as a star, on a **map of 1,400 other generated models**
-     (section 4).
+     (section 4),
+   - the trained task nearest to the star.
+
+   The model with task ID has a menu for the label it is told, so a wrong label can be tried
+   against the same examples.
 3. **Run.** Both generated models predict the output for a new input x′. They run on
    their own: the examples and the hypernetwork are no longer used. The visitor can:
    - pick one of 4 unseen inputs, which have known answers and show ✓/✗, or
    - paint their own input cell by cell. Then there is no reference answer.
+
+The same preset episodes also feed the **example-episode figure** in the Motivation section
+(`renderOnTheFlyEpisode` in `demo.js`): a read-only view of one task's three examples and
+query, with a menu to look at any of the 14 tasks. Flip is shown first.
+
+The figure in the generalisation section is the same component, fed by `compositions.json`:
+one episode for each of the 10 held-out compositions, Mirror ∘ Fill first (the episode of the
+paper's figure). A ∘ B means B first, then A. `export_compositions.py` rebuilds that file from the models repo's generator;
+its header says how.
 
 The generation pipeline for one task:
 
@@ -187,18 +201,16 @@ change a prediction.
 
 - **Preset examples are chosen.** For each task, the three examples are the set whose
   generated models solve the most queries in that task. Sets that both models solve
-  on the paired query come first. The page says so.
+  on the paired query come first. **The page does not say so yet.**
 - **The other inputs are random.** Inputs 2–4 are a fixed random draw from the same
   task. They are not filtered to ones the models get right.
-- **The real accuracy is printed** under every task, for example Move 1 step: 23%
-  without task ID vs 100% with it.
+- **The real accuracy is exported but not shown.** `weights.json` holds it per task
+  (`test_exact_match`), for example Move 1: 23% without task ID vs 100% with it. The page
+  does not print it yet.
 - **Differences are rare on the presets.** On 12 of the 14 tasks both models solve all
   4 preset inputs. On Mirror both fail input 3. On Move Dynamic, the model without task
   ID solves only input 1 and the model with task ID solves inputs 1 and 2. So the gap
   mostly shows when visitors paint their own inputs.
-- **Possible mismatch:** the page and code README say the generated model has 1,204
-  parameters, but the paper text says "1.4K" (`content/generation.md`). Check which
-  model the paper means.
 
 ---
 
@@ -222,6 +234,5 @@ locally.
 
 ## 8. Possible next steps
 
-- **Editable examples.** Let visitors change the three examples. Then the z values,
-  the weights and the dot on the map all move live, which is the truly "dynamic" map.
+- **Say how the presets were chosen** and show each task's real accuracy (section 6).
 - **Median seed** instead of the best seed, to match the paper's averages (section 2).

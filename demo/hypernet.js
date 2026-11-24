@@ -131,8 +131,6 @@
       return linear([hidden], p["projection.2.weight"])[0];
     }
 
-    const generate = (si, so, taskIndex) => decode(encode(si, so, taskIndex));
-
     /** Generated model: one input sequence -> predicted colour per cell. */
     function predict(flatWeights, input) {
       const w = split(flatWeights, model.target_shapes);
@@ -140,7 +138,7 @@
       return logits.slice(0, input.length).map((r) => r.indexOf(Math.max(...r)));
     }
 
-    return { encode, decode, generate, predict };
+    return { encode, decode, predict };
   }
 
   const api = { create };

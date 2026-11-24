@@ -5,8 +5,9 @@
  * Adapts when-rubrics-fail/legal-reward-bench's applyTheme(mode) (which read
  * a single hardcoded global THEME const) into a parameterized
  * applyTheme(themeConfig, mode), driven by project.yaml's theme: block
- * instead: { palette: "teal"|"sage"|"gold", mode: "auto"|"light"|"dark",
- * overrides: {} }. See tasks/03-engine-js-foundation.md.
+ * instead: { palette: "teal"|"sage"|"gold"|"mysterious_primary", overrides: {} }.
+ * Light or dark is the visitor's choice (system setting, then the toggle), not a
+ * config value. See tasks/03-engine-js-foundation.md.
  *
  * Called twice, same as the source repos: once from index.html's pre-paint
  * THEME BOOTSTRAP script (before project.yaml has loaded -- uses a fixed

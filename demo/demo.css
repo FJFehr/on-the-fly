@@ -8,6 +8,7 @@
 .otf-presets, .otf-tools, .otf-columns, .otf-legend { margin-top: 16px; }
 .otf-demo .btn { cursor: pointer; font-family: inherit; }
 .otf-demo .btn[aria-pressed="true"] { border-color: var(--green-dark); background: var(--green-light); font-weight: 600; }
+.otf-demo .btn:disabled { opacity: 0.5; cursor: default; }
 .otf-primary { border-color: var(--green-dark); display: block; margin: 0 auto; }
 .otf-small { padding: 4px 12px; font-size: 0.85rem; }
 
@@ -20,6 +21,16 @@ main#main .otf-step-title { margin: 36px 0 14px; font-size: 1.35rem; font-weight
 /* Caption under each step's box, styled like a figure caption. */
 main#main .otf-caption { margin: 12px 0 0; font-size: 0.9rem; color: var(--color-text-muted); text-align: center; }
 main#main .otf-closing { margin-top: 28px; font-size: 1rem; color: var(--color-text); }
+/* A step's first block sits against its padding, whichever block that is. */
+.otf-step > :first-child { margin-top: 0; }
+/* Step 1's examples, empty until a task is picked. */
+.otf-examples:not(:empty) { margin-top: 16px; }
+/* Step 2's maps and legend, hidden until a model is generated, then faded in. */
+.otf-columns[hidden], .otf-legend[hidden] { display: none; }
+@keyframes otf-in { from { opacity: 0; } }
+@media (prefers-reduced-motion: no-preference) {
+  .otf-columns, .otf-legend { animation: otf-in 0.4s ease; }
+}
 .otf-pair + .otf-pair { margin-top: 18px; }
 /* Editing tools under the examples: the palette stays on the centre line (equal side columns),
    the reset button sits in the right corner. On narrow screens the button drops below. */
@@ -74,18 +85,20 @@ button.otf-cell:hover { filter: brightness(1.12); }
 .otf-swatch[aria-pressed="true"] { outline: 2px solid var(--color-text); outline-offset: 2px; }
 .otf-hint { color: var(--color-text-muted); font-size: 0.85rem; margin-right: 4px; }
 
-.otf-status { margin: 10px 0 0; }
 
-/* Side-by-side models (stack on narrow screens). */
-.otf-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-@media (max-width: 600px) { .otf-columns { grid-template-columns: 1fr; } }
+/* Side-by-side models, on phones too, so both maps are on screen at once. */
+.otf-columns { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 16px; }
+/* Both columns share their four rows (name, what it is given, map, nearest task), so the
+   lines and the maps align whatever wraps in one column. */
+.otf-column { display: grid; grid-template-rows: subgrid; grid-row: span 4; }
 /* A model's name: the same heading over its map (step 2) and over its prediction (step 3). */
 main#main .otf-model-name { margin: 0 0 4px; font-family: var(--font-serif); font-size: 1.15rem; text-align: center; }
 main#main .otf-line + .otf-model-name { margin-top: 14px; }
-/* What each hypernetwork is given: one line of equal height in both columns, so the maps align. */
-.otf-given { min-height: 2em; display: flex; align-items: center; justify-content: center; }
+/* What each hypernetwork is given. The task-ID menu sits under its label, so the label lines up
+   with "Examples only" in the other column. */
+.otf-given label { display: flex; flex-direction: column; align-items: center; gap: 4px; }
 .otf-select {
-  margin-left: 6px; padding: 2px 6px; font: inherit; color: var(--color-text);
+  max-width: 100%; padding: 2px 6px; font: inherit; color: var(--color-text);
   background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 6px;
 }
 /* Reserved line under each map, so the step does not grow when the star is placed. */
@@ -93,8 +106,6 @@ main#main .otf-line + .otf-model-name { margin-top: 14px; }
 .otf-note { margin: 12px 0 0; text-align: center; }
 .otf-column > .otf-hint { text-align: center; }
 .otf-column .otf-hint { margin: 0; }
-.otf-column .otf-status { margin-top: 4px; }
-.otf-status:empty { display: none; }
 /* Task map, styled like the paper's t-SNE figure (serif labels, paper palette). */
 .otf-map-frame { position: relative; margin-top: 10px; }
 .otf-map { display: block; width: 100%; aspect-ratio: 1; cursor: crosshair; }
@@ -112,4 +123,43 @@ main#main .otf-line + .otf-model-name { margin-top: 14px; }
 .otf-legend-item::before {
   content: ""; box-sizing: border-box; width: 11px; height: 11px; border-radius: 50%;
   border: 1.25px solid var(--c); background: color-mix(in srgb, var(--c) 30%, transparent);
+}
+
+/* Phones: larger cells and tap areas, and step 2 compact enough for both maps to fit the screen. */
+@media (max-width: 600px) {
+  .otf-step { padding: 12px; }
+  .otf-line { gap: 6px; }
+  .otf-label, .otf-after { flex-basis: 1.5rem; }
+  .otf-small { padding: 6px 12px; }
+  .otf-swatch { width: 26px; }
+  .otf-palette { gap: 6px; }
+  .otf-columns { column-gap: 12px; }
+  main#main .otf-model-name { font-size: 1rem; }
+  .otf-nearest { min-height: 3em; }
+  .otf-legend { font-size: 0.8rem; gap: 2px 10px; }
+}
+
+/* Example-episode figure (renderOnTheFlyEpisode): each line is input row, arrow, output row,
+   the two rows meeting at the arrow. */
+/* It is a figure: the page's figure spacing, at the demo's width; the caption lines up with the box. */
+.otf-episode { margin: 24px auto; }
+.otf-episode figcaption { padding-inline: 0; }
+.otf-episode-pair { display: flex; align-items: center; gap: 8px; }
+.otf-episode-pair + .otf-episode-pair { margin-top: 6px; }
+.otf-episode-pair .otf-line { flex: 1 1 0; min-width: 0; }
+.otf-episode-pair .otf-line:first-child { justify-content: flex-end; }
+.otf-episode-pair .otf-line:last-child { justify-content: flex-start; }
+.otf-episode .otf-after { display: none; }
+.otf-arrow { color: var(--color-text-muted); }
+.otf-episode .otf-presets { gap: 8px; }
+/* Output under its input: long sequences (.otf-stacked) at any width, every task on phones. */
+.otf-stacked .otf-episode-pair { display: block; }
+.otf-stacked .otf-episode-pair + .otf-episode-pair { margin-top: 18px; }
+.otf-stacked .otf-line:is(:first-child, :last-child) { justify-content: center; }
+.otf-stacked .otf-arrow { display: none; }
+@media (max-width: 600px) {
+  .otf-episode-pair { display: block; }
+  .otf-episode-pair + .otf-episode-pair { margin-top: 18px; }
+  .otf-episode-pair .otf-line:is(:first-child, :last-child) { justify-content: center; }
+  .otf-arrow { display: none; }
 }
