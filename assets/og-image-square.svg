@@ -1,0 +1,12 @@
+<!-- Source of the square link-preview image, assets/og-image-square.png (1200x1200), for apps
+     that show a square thumbnail (WhatsApp): the examples, the hypernetwork and the generated
+     weights, without the model that runs them. To rebuild it, open this file in a browser at
+     1200x1200 and take a screenshot. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200" width="1200" height="1200" role="img" aria-labelledby="ogSquareTitle">
+  <title id="ogSquareTitle">A hypernetwork turns three example pairs into the weights of a small model.</title>
+  <rect width="1200" height="1200" fill="#F0ECE3"/>
+  <!-- The left 1904 x 901 of the hero diagram (everything up to the weights' label), 1140 wide. -->
+  <svg x="30" y="330.3" width="1140" height="539.5" viewBox="12 84 1904 901">
+    <image href="figures/hypernetworks-full.png" width="2716" height="988"/>
+  </svg>
+</svg>

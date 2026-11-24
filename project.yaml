@@ -2,7 +2,7 @@ paper:
   title: "On-the-fly Weight Generation: A Hypernetwork Proof of Concept on ARC-1D"
   short_title: "On-the-fly Weights"          # nav wordmark + browser tab title; keep brief
   wordmark_logo: assets/favicon.svg          # optional graphic after the nav wordmark
-  description: "On ARC-1D, a single hypernetwork generates the weights of tiny task-specific models from a few examples. The weights form a structured space, and the models partially generalise to compositions and transformations not seen during training."
+  description: "A hypernetwork generates the weights of tiny task-specific models from a few ARC-1D examples."
   year: 2026
   venue:                               # a plain string, or a map like this one
     label: "Workshop (🔦 Spotlight)"
@@ -29,9 +29,12 @@ resources:
   # shows a greyed-out button, so delete the line if you don't want one.
 
 social:
-  # Link-preview card for X, LinkedIn, Slack and others: a 1200x630 PNG (they do not show SVG).
-  # Its source is assets/og-image.svg; after editing that, open it in a browser at 1200x630,
-  # screenshot it to assets/og-image.png, and keep the og:image tags in index.html in step.
+  # Link-preview images, PNG because X, LinkedIn and others do not show SVG. Two of them:
+  # assets/og-image.png (1200x630, the whole diagram) for the wide cards of X and LinkedIn, and
+  # assets/og-image-square.png (1200x1200, without the generated model) for square thumbnails
+  # such as WhatsApp's. Sources: assets/og-image.svg and assets/og-image-square.svg; after
+  # editing one, open it in a browser at its size and screenshot it to the PNG. index.html
+  # lists both in its og:image tags, the wide one first.
   image: assets/og-image.png
   favicon: assets/favicon.svg          # 3x3 tile grid
   canonical_url: https://fabiojfehr.com/on-the-fly/
