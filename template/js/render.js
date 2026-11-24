@@ -417,6 +417,8 @@
       }).then(function () {
         const target = location.hash && document.getElementById(decodeURIComponent(location.hash.slice(1)));
         if (target) target.scrollIntoView({ behavior: "instant" });  // jump like a native deep link, not the CSS smooth scroll
+        // Layout is final: blocks that act on scroll position (play-once figures) start now.
+        document.dispatchEvent(new Event("page:settled"));
       });
 
       // Footer
@@ -433,7 +435,7 @@
       if (main) {
         main.textContent =
           "Content failed to load. If you're previewing locally, serve this folder " +
-          "over http:// (not file://) -- see tasks/07-verification.md.";
+          "over http:// (not file://).";
       }
     });
   });

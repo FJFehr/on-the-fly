@@ -56,11 +56,21 @@
       return dark && document.documentElement.getAttribute("data-theme") === "dark" ? dark : light;
     };
     const blobs = {};   // animation URL -> Promise<Blob>, so each file is downloaded once
-    let run = 0, timer = null, objectUrl = null;
+    let run = 0, timer = null, objectUrl = null, seen = false;
+
+    function load(url) {
+      blobs[url] = blobs[url] || fetch(url).then(function (res) {
+        if (!res.ok) throw new Error(url + " responded " + res.status);
+        return res.blob();
+      });
+      return blobs[url];
+    }
 
     function setState(state) {
       stage.classList.toggle("is-waiting", state === "waiting");
       stage.classList.toggle("is-playing", state === "playing");
+      // The caption is released once the first play is over, and stays (see show()).
+      if (state === "resting" && seen) figure.classList.remove("caption-held");
     }
 
     function play() {
@@ -71,11 +81,7 @@
       setState("waiting");
       timer = setTimeout(function () { if (id === run) { run += 1; setState("resting"); } }, WAIT_MS);
       const url = themed(block.src, block.src_dark);
-      blobs[url] = blobs[url] || fetch(url).then(function (res) {
-        if (!res.ok) throw new Error(url + " responded " + res.status);
-        return res.blob();
-      });
-      blobs[url].then(function (blob) {
+      load(url).then(function (blob) {
         if (id !== run) return;
         // A new object URL is a new image to the browser, so its animation starts from the
         // first frame. Re-using the file's own URL would resume or skip the replay.
@@ -94,9 +100,32 @@
       });
     }
 
-    new MutationObserver(play).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    play();
+    // The first play waits until the figure is on screen, so it is not over before a visitor
+    // scrolls down to it. Until then the still shows and the animation downloads.
+    function show() {
+      if (seen) return play();
+      still.src = themed(block.still, block.still_dark);
+      if (reducedMotion.matches) return;
+      // "caption-held": the stylesheet hides the caption on phones until the animation has
+      // played, so nobody has to read while it runs.
+      figure.classList.add("caption-held");
+      load(themed(block.src, block.src_dark)).catch(function () {});  // play() reports a failure
+    }
+    new MutationObserver(show).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    show();
+    // Watch only once the page has settled (render.js): content still loading above the figure
+    // would otherwise carry it through the viewport and start the animation early.
+    document.addEventListener("page:settled", function () {
+      new IntersectionObserver(function (entries, observer) {
+        if (!entries[0].isIntersecting) return;
+        observer.disconnect();
+        seen = true;
+        play();
+      }, { threshold: 0.6 }).observe(stage);
+    }, { once: true });
   }
+
+  const scriptLoads = {};   // script URL -> Promise, for the custom block
 
   const renderers = {
     markdown: function (container, block) {
@@ -121,8 +150,9 @@
         figure.classList.add("fig-" + block.position);
       }
       // Optional width (any CSS length, e.g. "60%") for small plots that
-      // would otherwise stretch to the full prose width.
-      if (block.width) figure.style.maxWidth = block.width;
+      // would otherwise stretch to the full prose width. A custom property, not an inline
+      // max-width, so the stylesheet can drop it on phones.
+      if (block.width) figure.style.setProperty("--figure-width", block.width);
       if (block.still) {
         // Optional `still` (+ `still_dark`, `play_ms`): `src` is an animation that plays
         // once and then gives way to the still.
@@ -174,7 +204,7 @@
           grid.className = "takeaways-grid";
           (items || []).forEach(function (item) {
             const card = item.anchor ? document.createElement("a") : document.createElement("div");
-            card.className = "takeaway";
+            card.className = item.body ? "takeaway" : "takeaway takeaway-title-only";
             if (item.anchor) card.href = item.anchor;
             card.innerHTML =
               "<strong>" + mdInline(item.title || "") + "</strong> " + mdInline(item.body || "");
@@ -255,20 +285,22 @@
     // stylesheet and the listed scripts in order, then calls the global
     // function named by `render` with (container, block).
     custom: function (container, block) {
-      if (block.stylesheet) {
+      // Two custom blocks may share a stylesheet or a script: each URL is loaded once.
+      if (block.stylesheet && !document.querySelector('link[href="' + block.stylesheet + '"]')) {
         const link = document.createElement("link");
         link.rel = "stylesheet";
         link.href = block.stylesheet;
         document.head.appendChild(link);
       }
       const loadScript = function (src) {
-        return new Promise(function (resolve, reject) {
+        scriptLoads[src] = scriptLoads[src] || new Promise(function (resolve, reject) {
           const script = document.createElement("script");
           script.src = src;
           script.onload = resolve;
           script.onerror = function () { reject(new Error(src + " failed to load")); };
           document.head.appendChild(script);
         });
+        return scriptLoads[src];
       };
       return (block.scripts || []).reduce(function (chain, src) {
         return chain.then(function () { return loadScript(src); });

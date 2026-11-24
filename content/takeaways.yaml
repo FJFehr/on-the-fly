@@ -4,12 +4,15 @@
 # read alone, tell the story. Each body has two short parts: the first completes
 # the title, the second links to the next card. The anchor is its results section.
 # No result numbers here: the figures and tables carry those.
-- title: "Specialisation requires less capacity."
-  body: "Learning all ARC-1D tasks at once requires more parameters, while an individual task needs only a tiny specialised model. *Could such models be generated at inference time?*"
+# The bodies are commented out: the cards show their titles only, which keeps the
+# block short on phones. Uncomment a body line to show it again.
+# The number in each title matches the number in its section's title (project.yaml).
+- title: "1. Specialisation requires less capacity."
+  # body: "Learning all ARC-1D tasks at once requires more parameters, while an individual task needs only a tiny specialised model. *Could such models be generated at inference time?*"
   anchor: "#capacity"
-- title: "A hypernetwork can generate task-specific models on the fly."
-  body: "Given a few examples, it generates the weights of another model in a single forward pass. Such generation often relies on a task identifier, raising the question of tasks never seen in training."
+- title: "2. A hypernetwork can generate task-specific models on the fly."
+  # body: "Given a few examples, it generates the weights of another model in a single forward pass. Such generation often relies on a task identifier, raising the question of tasks never seen in training."
   anchor: "#generation"
-- title: "Examples generalise further than task identifiers."
-  body: "A new task has no identifier, so the hypernetwork infers it from the examples, mapping it into a structured space of task-specific weights. The resulting models partially transfer to compositions and unseen transformations."
+- title: "3. Examples generalise further than task identifiers."
+  # body: "A new task has no identifier, so the hypernetwork infers it from the examples, mapping it into a structured space of task-specific weights. The resulting models partially transfer to compositions and unseen transformations."
   anchor: "#generalisation"

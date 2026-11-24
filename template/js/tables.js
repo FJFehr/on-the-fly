@@ -106,13 +106,16 @@
     const tbody = document.createElement("tbody");
     parsed.rows.forEach(function (cells) {
       const tr = document.createElement("tr");
-      // A row with only its first cell filled is a group label ("*Unseen*").
-      if (cells.length > 1 && cells.slice(1).every(function (c) { return !c; })) {
+      // A row with only its first cell filled is a group label ("*Unseen*"). Its one cell spans
+      // the row, so a long label does not widen the first column.
+      const isGroup = cells.length > 1 && cells.slice(1).every(function (c) { return !c; });
+      if (isGroup) {
         tr.className = "md-table-group";
         el.classList.add("md-table-grouped");
       }
-      cells.forEach(function (cell, i) {
+      (isGroup ? cells.slice(0, 1) : cells).forEach(function (cell, i) {
         const td = document.createElement("td");
+        if (isGroup) td.colSpan = cells.length;
         if (i === 0) td.className = "md-table-key";
         td.innerHTML = tableInline(cell);
         tr.appendChild(td);

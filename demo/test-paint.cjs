@@ -23,12 +23,17 @@ function check(name, actual, expected) {
   const page = await browser.newPage();
   page.on("pageerror", function (err) { failures++; console.log("FAIL page error: " + err.message); });
   await page.goto(URL);
+  // No task is preselected: the examples appear once one is picked.
+  await page.locator(".otf-tab", { hasText: /^Flip$/ }).click();
   await page.waitForSelector(".otf-step .otf-line button.otf-cell");
 
-  // Step containers: [0] examples, [1] generate, [2] run.
-  const step = function (k) { return page.locator(".otf-step").nth(k); };
+  // Step containers: [0] examples, [1] generate, [2] run. The example-episode figure higher up
+  // the page (.otf-episode) uses the same box class, so it is left out.
+  const step = function (k) { return page.locator(".otf-demo:not(.otf-episode) .otf-step").nth(k); };
+  // Rows are found by their label's TeX source ("x_1", "x'"), which KaTeX keeps in an
+  // <annotation> element next to the typeset maths.
   const cells = function (k, label) {
-    return step(k).locator(".otf-line", { has: page.locator(".otf-label", { hasText: new RegExp("^" + label + "$") }) })
+    return step(k).locator(".otf-line", { has: page.locator(".otf-label annotation", { hasText: new RegExp("^" + label + "$") }) })
       .locator("button.otf-cell");
   };
   const value = async function (k, label, i) {
@@ -60,7 +65,7 @@ function check(name, actual, expected) {
     console.log("-- step 1, " + phase);
     if (phase === "after generating") await step(1).locator("button.otf-primary").click();
     await pickRed(0);
-    for (const label of ["x1", "y1", "x3"]) {
+    for (const label of ["x_1", "y_1", "x_3"]) {
       await roundTrip(0, label, function (v) { return v === 0; }, "background");
       await roundTrip(0, label, function (v) { return v !== 0 && v !== RED; }, "coloured");
     }
@@ -68,8 +73,8 @@ function check(name, actual, expected) {
 
   console.log("-- step 3");
   await pickRed(2);
-  await roundTrip(2, "x′", function (v) { return v === 0; }, "background");
-  await roundTrip(2, "x′", function (v) { return v !== 0 && v !== RED; }, "coloured");
+  await roundTrip(2, "x'", function (v) { return v === 0; }, "background");
+  await roundTrip(2, "x'", function (v) { return v !== 0 && v !== RED; }, "coloured");
 
   await browser.close();
   console.log(failures ? failures + " failure(s)" : "all passed");

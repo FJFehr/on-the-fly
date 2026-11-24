@@ -29,19 +29,22 @@ resources:
   # shows a greyed-out button, so delete the line if you don't want one.
 
 social:
-  image: assets/og-image.svg           # OG/Twitter card image
+  # Link-preview card for X, LinkedIn, Slack and others: a 1200x630 PNG (they do not show SVG).
+  # Its source is assets/og-image.svg; after editing that, open it in a browser at 1200x630,
+  # screenshot it to assets/og-image.png, and keep the og:image tags in index.html in step.
+  image: assets/og-image.png
   favicon: assets/favicon.svg          # 3x3 tile grid
   canonical_url: https://fabiojfehr.com/on-the-fly/
 
 theme:
   palette: mysterious_primary          # "teal" | "sage" | "gold" | "mysterious_primary" (see template/js/palettes.js)
-  mode: auto                           # "auto" | "light" | "dark" (initial only; visitor can still toggle)
   # Optional CSS custom-property overrides, one per indented line, e.g.
   #   --font-serif: "Georgia", serif
   overrides:
     --affiliation-logo-height: 76px
     --section-title-align: center
     --prose-text-align: justify
+    --prose-hyphens: auto
 
 footer:
   note: null                           # optional plain string, renders as-is (no Markdown)
@@ -84,12 +87,17 @@ sections:
         source: content/motivation.md
       - type: markdown
         source: content/data.md
-      - type: figure
-        src: assets/figures/arc1d-flip-episode.png
-        alt: "An ARC-1D episode for the Flip transformation: three input and output example pairs and a query input whose output must be predicted."
-        caption: '**Flip: an example episode.** The support set $Z_{\mathcal E}$ specifies the transformation, which is applied to the query input in $Z^\prime_{\mathcal E}$.'
-        position: center
-        width: 64%
+      # Example episode with a menu of all 14 transformations (demo/demo.js draws it from the
+      # demo's preset episodes). `task` is the one shown first; {task} in the caption is replaced
+      # by the chosen transformation's name.
+      - type: custom
+        scripts:
+          - demo/demo.js
+        stylesheet: demo/demo.css
+        render: renderOnTheFlyEpisode
+        weights: demo/weights.json
+        task: flip
+        caption: '**{task}: an example episode.** The support set $Z_{\mathcal E}$ specifies the transformation, which is applied to the query input in $Z^\prime_{\mathcal E}$.'
       - type: markdown
         source: content/data-metric.md
 
@@ -109,7 +117,7 @@ sections:
         weights: demo/weights.json
 
   - id: capacity
-    title: Specialised Models Require Less Capacity
+    title: "1. Specialised Models Require Less Capacity"   # numbered like its Key Findings card (content/takeaways.yaml)
     nav_title: Results
     nav: true
     blocks:
@@ -125,7 +133,7 @@ sections:
         source: content/capacity-discussion.md
 
   - id: generation
-    title: Generating Specialised Models with Hypernetworks
+    title: "2. Generating Specialised Models with Hypernetworks"   # numbered like its Key Findings card (content/takeaways.yaml)
     nav: false
     blocks:
       - type: markdown
@@ -146,16 +154,23 @@ sections:
         source: content/generation-space.md
 
   - id: generalisation
-    title: Towards Generalisation with Hypernetworks
+    title: "3. Towards Generalisation with Hypernetworks"   # numbered like its Key Findings card (content/takeaways.yaml)
     nav: false
     blocks:
       - type: markdown
         source: content/generalisation.md
-      - type: figure
-        src: assets/figures/arc1d-comp-fill-mirror.png
-        alt: "An ARC-1D episode for the held-out composition Fill after Mirror: three input and output example pairs and a query input whose output must be predicted."
-        caption: "**Fill ∘ Mirror: an example held-out composition.** The support pairs specify *Mirror* followed by *Fill*."
-        position: center
+      # Example episode with a menu of the 10 held-out compositions: the same figure as in the
+      # Motivation section, fed by demo/compositions.json (rebuilt by demo/export_compositions.py).
+      # A ∘ B means B first, then A: {first} is the part applied first, {second} the one after it.
+      - type: custom
+        scripts:
+          - demo/demo.js
+        stylesheet: demo/demo.css
+        render: renderOnTheFlyEpisode
+        weights: demo/compositions.json
+        task: fill_mirror
+        menu_label: "Composition:"
+        caption: "**{task}: an example held-out composition.** The support pairs specify *{first}* followed by *{second}*."
       - type: markdown
         source: content/generalisation-unseen.md
       - type: table
@@ -175,7 +190,7 @@ sections:
           - id: ablation-canon
             src: assets/figures/ablation-canon.png
             alt: "Exact-match accuracy against parameter count with and without Canon layers, for individual models and joint models with and without task ID. Canon layers improve every setting, most at low capacity."
-            caption: "**The inductive bias of Canon layers is helpful for these tasks, especially when capacity is limited.**"
+            caption: "**Canon layers are helpful when capacity is limited.**"
           - id: ablation-muon
             src: assets/figures/ablation-muon.png
             alt: "Exact-match accuracy against parameter count with Muon and with AdamW, for individual models and joint models with and without task ID. Muon matches or exceeds AdamW in every setting."
